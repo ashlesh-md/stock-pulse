@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TODO(release): TEAM_ID.com.ashlesh.prep.stockPulse",
+        "paths": ["/stock/*", "/trade/*", "/options", "/portfolio/*", "/alerts*", "/ai*", "/watchlist"]
+      }
+    ]
+  }
+}

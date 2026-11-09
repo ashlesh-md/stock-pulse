@@ -1,0 +1,173 @@
+{
+  "name": "StockPulse v2",
+  "root": ".",
+  "phases": [
+    {
+      "id": "intake",
+      "name": "Intake",
+      "owner": "manager"
+    },
+    {
+      "id": "discovery",
+      "name": "Discovery",
+      "owner": "analyst"
+    },
+    {
+      "id": "prd",
+      "name": "PRD",
+      "owner": "product-manager"
+    },
+    {
+      "id": "design",
+      "name": "UX design",
+      "owner": "ux-designer"
+    },
+    {
+      "id": "gate-1",
+      "name": "Gate 1: scope",
+      "owner": "you",
+      "gate": true
+    },
+    {
+      "id": "architecture",
+      "name": "TRD / HLD / LLD",
+      "owner": "architect"
+    },
+    {
+      "id": "planning",
+      "name": "Stories",
+      "owner": "scrum-master"
+    },
+    {
+      "id": "gate-2",
+      "name": "Gate 2: plan",
+      "owner": "you",
+      "gate": true
+    },
+    {
+      "id": "build",
+      "name": "Build",
+      "owner": "dev-lead"
+    },
+    {
+      "id": "qa",
+      "name": "QA",
+      "owner": "qa-lead"
+    },
+    {
+      "id": "review",
+      "name": "Code review",
+      "owner": "reviewer"
+    },
+    {
+      "id": "gate-3",
+      "name": "Gate 3: release",
+      "owner": "you",
+      "gate": true
+    }
+  ],
+  "signoffs": [
+    {
+      "id": "product",
+      "name": "Product",
+      "owner": "product-manager"
+    },
+    {
+      "id": "design",
+      "name": "Design / UX",
+      "owner": "ux-designer"
+    },
+    {
+      "id": "engineering",
+      "name": "Engineering",
+      "owner": "reviewer"
+    },
+    {
+      "id": "qa",
+      "name": "QA",
+      "owner": "qa-lead"
+    },
+    {
+      "id": "user",
+      "name": "You",
+      "owner": "you"
+    }
+  ],
+  "roster": [
+    {
+      "id": "manager",
+      "name": "Engineering manager",
+      "team": "lead"
+    },
+    {
+      "id": "analyst",
+      "name": "Business analyst",
+      "team": "product"
+    },
+    {
+      "id": "product-manager",
+      "name": "Product manager",
+      "team": "product"
+    },
+    {
+      "id": "ux-designer",
+      "name": "UX designer",
+      "team": "design"
+    },
+    {
+      "id": "ui-designer",
+      "name": "Visual designer",
+      "team": "design"
+    },
+    {
+      "id": "architect",
+      "name": "Architect",
+      "team": "dev"
+    },
+    {
+      "id": "scrum-master",
+      "name": "Scrum master",
+      "team": "product"
+    },
+    {
+      "id": "dev-lead",
+      "name": "Dev lead",
+      "team": "dev"
+    },
+    {
+      "id": "dev-realtime",
+      "name": "Dev: realtime and server",
+      "team": "dev"
+    },
+    {
+      "id": "dev-trading",
+      "name": "Dev: trading screens",
+      "team": "dev"
+    },
+    {
+      "id": "dev-ai",
+      "name": "Dev: AI chat and charts",
+      "team": "dev"
+    },
+    {
+      "id": "dev-perf",
+      "name": "Dev: startup and performance",
+      "team": "dev"
+    },
+    {
+      "id": "qa-lead",
+      "name": "QA lead",
+      "team": "qa"
+    },
+    {
+      "id": "qa-automation",
+      "name": "QA automation",
+      "team": "qa"
+    },
+    {
+      "id": "reviewer",
+      "name": "Code reviewer",
+      "team": "review"
+    }
+  ]
+}

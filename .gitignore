@@ -1,0 +1,23 @@
+# Dart / Flutter
+.dart_tool/
+.packages
+build/
+coverage/
+.flutter-plugins
+.flutter-plugins-dependencies
+**/ios/Flutter/ephemeral/
+**/macos/Flutter/ephemeral/
+**/ios/Pods/
+**/macos/Pods/
+**/android/.gradle/
+**/android/local.properties
+**/android/app/release/
+*.iml
+.idea/
+.DS_Store
+# Python
+__pycache__/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+**/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java

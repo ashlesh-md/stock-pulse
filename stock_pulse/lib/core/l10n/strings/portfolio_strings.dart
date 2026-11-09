@@ -1,0 +1,47 @@
+/// Portfolio tab: P&L, positions and orders.
+abstract interface class PortfolioStrings {
+  String get title;
+  String get positions;
+  String get holdings;
+  String get orders;
+  String get noHoldings;
+  String get buyMore;
+  String get exit;
+  String get averagePrice;
+  String get quantity;
+  String positionsHeader(int n);
+  String ordersHeader(int n);
+  String get noPositions;
+  String get unrealisedLive;
+  String get realised;
+  String get lastPrice;
+  String get invested;
+  String get currentValue;
+  String get dayPnl;
+  String get totalPnl;
+  String fundsAvailable(String amount);
+  String get holdingsFailed;
+  String get noOrders;
+  String get goToWatchlist;
+  String pnlPercent(String pnl, String percent);
+  String closedRealised(String pnl);
+  String longPosition(int quantity, String average);
+  String shortPosition(int quantity, String average);
+  String ltp(String price);
+  String atPrice(String price);
+  String limitAt(String price);
+  String get marketPrice;
+  String orderTitle(String symbol, int quantity, String price);
+  String orderSubtitle(String orderId, String type, String time);
+  String get cancel;
+  String get cancelFailed;
+  String get statusOpen;
+  String get statusQueued;
+  String get statusPending;
+  String get refreshStatus;
+  String get waitingForConnection;
+  String get statusTriggerPending;
+  String get statusComplete;
+  String get statusCancelled;
+  String get statusRejected;
+}

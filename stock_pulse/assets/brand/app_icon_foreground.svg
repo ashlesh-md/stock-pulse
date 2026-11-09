@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>StockPulse Android adaptive icon foreground</title>
+  <!-- 108 dp layer on a 1024 grid. Safe zone = circle of 66 dp = 626 units, centre (512,512), radius 313.
+       Every shape, including stroke width, stays inside that circle. Transparent background; the
+       adaptive background layer is solid #0E1116 (dark) set in values/ic_launcher_background.xml. -->
+  <rect x="490" y="236" width="44" height="540" rx="22" fill="#E8ECF2"/>
+  <rect x="432" y="392" width="160" height="240" rx="32" fill="#E8ECF2"/>
+  <path d="M288 650 H380 L442 546 L512 684 L596 446 L736 372" fill="none" stroke="#0E1116" stroke-width="88" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M288 650 H380 L442 546 L512 684 L596 446 L736 372" fill="none" stroke="#5AA9FF" stroke-width="54" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,4 @@
+.dart_tool/
+
+# Coverage gate (ADR-0020)
+/coverage/

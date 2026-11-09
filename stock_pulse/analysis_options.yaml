@@ -1,0 +1,11 @@
+include:
+  - package:flutter_lints/flutter.yaml
+  - ../analysis_rules.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - macos/**

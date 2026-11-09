@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>StockPulse app icon: a pulse line rising through a candle</title>
+  <!-- Full-bleed square; each platform applies its own mask. Background = dark surface0. -->
+  <rect width="1024" height="1024" fill="#0E1116"/>
+  <!-- Candle: wick and body, neutral (never green or red) -->
+  <rect x="488" y="216" width="48" height="592" rx="24" fill="#E8ECF2"/>
+  <rect x="424" y="384" width="176" height="264" rx="36" fill="#E8ECF2"/>
+  <!-- Pulse: dark halo keeps the line legible over the candle, then the accent line -->
+  <path d="M272 656 H376 L440 544 L512 696 L600 440 L752 360" fill="none" stroke="#0E1116" stroke-width="96" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M272 656 H376 L440 544 L512 696 L600 440 L752 360" fill="none" stroke="#5AA9FF" stroke-width="60" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

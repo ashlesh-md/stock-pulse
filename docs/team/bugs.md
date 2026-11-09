@@ -1,0 +1,28 @@
+# User-reported bugs (fix with a failing test first)
+
+| # | Reported | Screen | Problem | Owner |
+|---|---|---|---|---|
+| B1 | 7 Nov | AI chat | Shows **Retry on every message**; chat UI looks poor | dev-ai (STAB-1 checks the cause) |
+| B2 | 7 Nov | Portfolio | Shows **Retry** | dev-trading (STAB-1 checks the cause) |
+| B3 | 8 Nov (iOS sim screenshot) | Options | **Title alignment off**: "NIFTY options" centred with the Live badge alone on the right. Use the same app bar pattern as every other tab (left-aligned title, status on the right), consistent across screens | dev-trading |
+| B4 | 8 Nov | Options | Expiry chips show raw ISO dates (`2026-11-09`); show `9 Nov` style (and `Weekly`/`Monthly` tag) | dev-trading |
+| B5 | 8 Nov | Options | Chain opens at the deepest strike, not centred on ATM; no ATM marker or OI bars visible; CE/PE columns sparse (LTP only). Follow the UX spec chain layout: OI bar, change, LTP per side, ATM row marked, open centred on ATM, Back-to-ATM button | dev-trading |
+| B6 | 8 Nov | All | **Snackbar design still weak**: needs a floating rounded card, tone icon and colour, clear action, proper margins above the nav bar and keyboard, and one at a time | dev-trading |
+| B7 | 8 Nov | AI chat | **New answer generation is not smooth**: streaming text and cards should appear progressively without jumps (batched text deltas, animated card insert, stable scroll) | dev-ai |
+| B8 | 8 Nov | AI chat (likely) | **A "new message" indicator shows up at random and never disappears.** It must show only when a new message arrives while scrolled up, and hide when the user reaches the bottom or taps it | dev-ai |
+| B9 | 8 Nov (manager, simulator) | Options | Puts header reads `OI · ΔOI · LTP` but values are `LTP · ΔOI · OI`; header must mirror the values | dev-trading |
+| B10 | 8 Nov | Options | ΔOI is always 0: the server never changes open interest; simulate OI drift through the day | dev-realtime |
+| B11 | 8 Nov | Options | "Expires today" is yellow text on the blue selected chip: low contrast | dev-trading |
+| B12 | 8 Nov | AI chat | A plain explanation card shows "Stale since hh:mm:ss" the moment it arrives; only cards with live prices may show freshness, and a new answer is never stale on arrival | dev-ai |
+| B13 | 8 Nov | AI chat | Follow-ups appear twice (links inside the card and chips below it); keep one | dev-ai |
+| B14 | 8 Nov | Portfolio | P&L shows "+0.00" instead of a neutral ₹0.00; empty state has no action (add "Go to watchlist") | dev-trading |
+| B15 | 8 Nov | Watchlist | Drag handle and star sit on every row all the time and crowd the list; show reorder handles only in an Edit mode, keep the star | dev-trading |
+| B16 | 8 Nov (iOS sim screenshot) | Chart | Range values wrap and change the toolbar height while live prices update; keep a stable two-line readout and avoid narrow-screen overflow | dev-trading |
+| B17 | 8 Nov (iOS sim screenshot) | Navigation | Selected bottom-navigation label is too dark to read on the dark surface; use a surface-contrast label colour | dev-perf |
+| B18 | 8 Nov | AI chat | Never show the bottom navigation bar on the chat tab; retain a floating shortcut for tab changes when the keyboard is closed | dev-perf |
+| B19 | 8 Nov | Sheets | Audit all bottom sheets for compact intrinsic height; sheet content columns should use `MainAxisSize.min` and short multi-choice sheets should not fill most of the screen | dev-trading |
+| B20 | 8 Nov (iOS sim screenshots) | Strategy and order ticket | A transient progress line flashes under the strategy step header; option risk and ticket content float vertically with large empty gaps. Keep loading feedback from introducing a stray line and align screen content consistently near the app bar. | dev-trading |
+| B21 | 9 Nov (user) | All | **Foldable phones** (Galaxy Z Fold/Flip, Pixel Fold): <br>1. Layout follows the current window width, so folded = compact and unfolded inner screen ≈ medium/expanded. It must switch live, without losing state, when the phone folds or unfolds. <br>2. Two-pane layouts never put content under the hinge: read `MediaQuery.displayFeaturesOf(context)` (`DisplayFeatureType.hinge` / `fold`) and split the panes on the fold line. On Flutter's `TwoPane`-style split, the left pane ends at the hinge's left edge and the right pane starts at its right edge. <br>3. Half-open (tabletop) posture: when a horizontal fold is `halfOpened`, the chart goes on the top half and the controls or order ticket on the bottom. <br>4. Flip (cover screen): very small width; key screens stay usable, with no overflow at 260 dp wide. <br>5. Tests: widget tests with `MediaQueryData(displayFeatures: [...])` for a vertical hinge, a horizontal half-opened fold and a width change mid-session; a golden or layout test showing no widget overlaps the hinge rect. | dev-perf (`lib/app/layout/`, shell) + screen owners for tabletop layouts |
+| B22 | 9 Nov (manager, recording) | AI tab | Switching to the AI tab pauses the live feed, so the global banner shows "Prices not live since …" and AI quote cards show Stale. Cards visible in the chat must keep their symbols subscribed (LiveWhenVisible), and the banner must only show when the socket is actually down, not when no screen subscribes | dev-ai + dev-realtime |
+| B23 | 9 Nov | AI tab | The floating navigation (grid) button overlaps card content such as chart price labels; reserve space or move it clear of content | dev-perf |
+| B24 | 9 Nov | AI tab | Quote card price shows `1412.55` (no ₹, no grouping) next to `1,413.60` below; use the shared price formatter and one price source | dev-ai |

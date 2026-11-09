@@ -1,0 +1,41 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+    
+        {
+            "name": "market_server",
+            "cwd": "market_server",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "stock_pulse",
+            "cwd": "stock_pulse",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "stock_pulse (profile mode)",
+            "cwd": "stock_pulse",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "stock_pulse (release mode)",
+            "cwd": "stock_pulse",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "option_math",
+            "cwd": "packages/option_math",
+            "request": "launch",
+            "type": "dart"
+        }
+    ]
+}

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>StockPulse Android 13 themed (monochrome) icon layer</title>
+  <!-- Single colour on transparent; Android tints it. A gap (mask) separates line from candle. Same safe zone as the foreground. -->
+  <defs>
+    <mask id="gap" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <rect width="1024" height="1024" fill="#fff"/>
+      <path d="M288 650 H380 L442 546 L512 684 L596 446 L736 372" fill="none" stroke="#000" stroke-width="88" stroke-linecap="round" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <g mask="url(#gap)" fill="#000">
+    <rect x="490" y="236" width="44" height="540" rx="22"/>
+    <rect x="432" y="392" width="160" height="240" rx="32"/>
+  </g>
+  <path d="M288 650 H380 L442 546 L512 684 L596 446 L736 372" fill="none" stroke="#000" stroke-width="54" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

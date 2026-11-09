@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>StockPulse splash mark</title>
+  <!-- Transparent; works on both splash backgrounds (#0E1116 dark, #FFFFFF light).
+       Candle grey #8A95A5 is 6.2:1 on dark and 3.0:1 on white (graphic needs 3:1); accent line is a
+       theme-specific colour: generate two PNG sets (dark: #5AA9FF, light: #0B5CAD), see 13-brand-icon-splash. -->
+  <defs>
+    <mask id="gap" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <rect width="1024" height="1024" fill="#fff"/>
+      <path d="M288 650 H380 L442 546 L512 684 L596 446 L736 372" fill="none" stroke="#000" stroke-width="88" stroke-linecap="round" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <g mask="url(#gap)" fill="#8A95A5">
+    <rect x="490" y="236" width="44" height="540" rx="22"/>
+    <rect x="432" y="392" width="160" height="240" rx="32"/>
+  </g>
+  <path d="M288 650 H380 L442 546 L512 684 L596 446 L736 372" fill="none" stroke="#5AA9FF" stroke-width="54" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
