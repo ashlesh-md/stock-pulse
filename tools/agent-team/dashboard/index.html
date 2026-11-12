@@ -20,6 +20,12 @@
     <div class="progress-meta"><span id="progress-text">0%</span> · <span id="current-phase">-</span></div>
   </div>
   <div class="top-right">
+    <div class="sizer" role="group" aria-label="Text size">
+      <button type="button" id="zoom-out" title="Smaller text" aria-label="Smaller text">A−</button>
+      <span id="zoom-level">100%</span>
+      <button type="button" id="zoom-in" title="Larger text" aria-label="Larger text">A+</button>
+      <button type="button" id="layout-reset" title="Reset panel sizes" aria-label="Reset panel sizes">↺</button>
+    </div>
     <select id="project-select" aria-label="Project"></select>
     <span class="live"><span class="dot" id="live-dot"></span><span id="updated">-</span></span>
   </div>
@@ -31,16 +37,18 @@
     <ol class="pipeline" id="pipeline"></ol>
   </section>
 
-  <section class="grid">
+  <section class="grid top-grid">
     <div class="panel team-panel">
       <div class="panel-head"><h2>Team</h2><span class="hint" id="team-count"></span></div>
-      <div id="team"></div>
+      <div id="team" class="scroll"></div>
     </div>
+    <div class="gutter col" data-var="--col-team" data-dir="1" title="Drag to resize, double-click to reset"></div>
 
     <div class="panel board-panel">
       <div class="panel-head"><h2>Work board</h2><span class="hint" id="task-count"></span></div>
-      <div class="board" id="board"></div>
+      <div class="board scroll" id="board"></div>
     </div>
+    <div class="gutter col" data-var="--col-chat" data-dir="-1" title="Drag to resize, double-click to reset"></div>
 
     <div class="panel chat-panel">
       <div class="panel-head"><h2>Team discussion</h2><span class="hint" id="msg-count"></span></div>
@@ -48,21 +56,25 @@
       <div class="chat" id="chat"></div>
     </div>
   </section>
+  <div class="gutter row" data-var="--h-top" data-dir="1" title="Drag to resize, double-click to reset"></div>
 
   <section class="grid bottom">
-    <div class="panel">
+    <div class="panel signoff-panel">
       <div class="panel-head"><h2>Sign-offs</h2></div>
-      <div class="signoffs" id="signoffs"></div>
+      <div class="signoffs scroll" id="signoffs"></div>
     </div>
-    <div class="panel">
+    <div class="gutter col" data-var="--col-sign" data-dir="1" title="Drag to resize, double-click to reset"></div>
+    <div class="panel docs-panel">
       <div class="panel-head"><h2>Documents</h2><span class="hint">click to read</span></div>
-      <ul class="artifacts" id="artifacts"></ul>
+      <ul class="artifacts scroll" id="artifacts"></ul>
     </div>
-    <div class="panel">
+    <div class="gutter col" data-var="--col-activity" data-dir="-1" title="Drag to resize, double-click to reset"></div>
+    <div class="panel activity-panel">
       <div class="panel-head"><h2>Activity</h2></div>
-      <ul class="timeline" id="timeline"></ul>
+      <ul class="timeline scroll" id="timeline"></ul>
     </div>
   </section>
+  <div class="gutter row" data-var="--h-bottom" data-dir="1" title="Drag to resize, double-click to reset"></div>
 </main>
 
 <dialog id="viewer">
@@ -73,6 +85,7 @@
   <article id="viewer-body" class="md"></article>
 </dialog>
 
+<script src="layout.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
