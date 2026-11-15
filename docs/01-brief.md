@@ -139,7 +139,7 @@ third-party reviews.
 |---|---|---|---|---|
 | R1 | **Stale prices shown as live** after a cache-first start or a socket drop | A trader acts on wrong numbers; the worst failure for a trading app | Every quote carries `asOf`; the UI greys it out and shows the time when older than N s; orders blocked or warned when stale | architect |
 | R2 | Chain update load: about 30 strikes × 2 sides × several fields at 4 Hz | Jank, battery drain, dropped frames | Server conflation per strike; client subscribes only to visible strikes; per-cell `select` | architect |
-| R3 | Simulated data looks fake (IV flat, OI random, greeks inconsistent with premium) | Demo loses credibility with domain experts | Price options from Black-Scholes on a moving spot with an IV smile; OI drifts with seeded trends | developer |
+| R3 | Simulated data looks fake (IV flat, OI random, greeks inconsistent with premium) | Demo loses credibility with domain interviewers | Price options from Black-Scholes on a moving spot with an IV smile; OI drifts with seeded trends | developer |
 | R4 | Lot size or expiry rules hard-coded and later wrong | Wrong ₹ totals in the demo | Instrument metadata from the server; one config table with a source date | developer |
 | R5 | F&O suitability: the app makes options buying look easy | Ethical/regulatory look; poor product judgement in a review | Risk disclosure, max-loss on the payoff, nudges, "simulated, not advice" on AI cards | product manager |
 | R6 | AI chat promises more than a rule-based server can do | Answers feel canned or wrong | Small fixed set of question types, with a clear "I can answer…" list of suggestions | product manager |

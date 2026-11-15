@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stock_pulse/core/l10n/locales/en/market_strings_en.dart';
 import 'package:stock_pulse/core/theme/sp_colors.dart';
+import 'package:stock_pulse/features/chart/presentation/candle_chart.dart';
+import 'package:stock_pulse/features/chart/presentation/candle_painter.dart';
 import 'package:stock_pulse/features/market/domain/candle.dart';
-import 'package:stock_pulse/features/market/presentation/widgets/candle_chart.dart';
-import 'package:stock_pulse/features/market/presentation/widgets/candle_painter.dart';
 
 import '../../helpers/sp_app.dart';
 import 'candle_chart_data.dart';

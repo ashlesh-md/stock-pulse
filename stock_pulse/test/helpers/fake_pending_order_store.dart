@@ -8,12 +8,14 @@ Override fakePendingOrderStoreOverride() => pendingOrderStoreProvider
 
 class FakePendingOrderStore implements PendingOrderStore {
   final orders = <String, PendingOrder>{};
+  bool failWrites = false;
 
   @override
   Future<List<PendingOrder>> readAll() async => orders.values.toList();
 
   @override
   Future<void> put(PendingOrder order) async {
+    if (failWrites) throw StateError('disk full');
     orders[order.clientKey] = order;
   }
 

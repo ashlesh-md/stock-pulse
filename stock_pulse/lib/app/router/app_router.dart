@@ -6,9 +6,11 @@ import 'package:stock_pulse/app/layout/window_class.dart';
 import 'package:stock_pulse/app/router/app_route.dart';
 import 'package:stock_pulse/app/router/app_shell_scaffold.dart';
 import 'package:stock_pulse/app/router/deep_link.dart';
+import 'package:stock_pulse/app/router/stock_chart_scope.dart';
 import 'package:stock_pulse/core/visibility/domain/screen_id.dart';
 import 'package:stock_pulse/features/ai_chat/presentation/screens/ai_chat_screen.dart';
 import 'package:stock_pulse/features/alerts/presentation/screens/alerts_screen.dart';
+import 'package:stock_pulse/features/chart/presentation/fullscreen/fullscreen_chart_screen.dart';
 import 'package:stock_pulse/features/market/presentation/screens/stock_detail_screen.dart';
 import 'package:stock_pulse/features/more/presentation/screens/add_funds_screen.dart';
 import 'package:stock_pulse/features/more/presentation/screens/debug_clock_screen.dart';
@@ -118,17 +120,51 @@ GoRouter buildAppRouter({
           ),
         ],
       ),
-      GoRoute(
-        path: StockRoute.path,
-        name: StockRoute.name,
+      ShellRoute(
         parentNavigatorKey: root,
-        builder: (_, state) => MaxWidthBox(
-          maxWidth: ContentWidth.table,
-          child: StockDetailScreen(
-            instrumentId: StockRoute.fromState(state).instrumentId,
-            isExternalLink: pendingExternalStockPaths.remove(state.uri.path),
+        // The root navigator sees this shell as the one stock page; the full
+        // screen chart inside it shows the same live data.
+        notifyRootObserver: false,
+        pageBuilder: (_, state, child) {
+          final route = StockRoute.fromState(state);
+          // One stable page for every stock: the shell owns a single
+          // navigator key, so a second page would duplicate it. The scope
+          // below is keyed by symbol and swaps the chart state instead.
+          return MaterialPage<void>(
+            key: const ValueKey(StockRoute.name),
+            name: StockRoute.name,
+            child: StockChartScope(
+              key: ValueKey(route.instrumentId),
+              instrumentId: route.instrumentId,
+              selection: route.selection,
+              child: child,
+            ),
+          );
+        },
+        routes: [
+          GoRoute(
+            path: StockRoute.path,
+            name: StockRoute.name,
+            builder: (_, state) => MaxWidthBox(
+              maxWidth: ContentWidth.table,
+              child: StockDetailScreen(
+                instrumentId: state.pathParameters['id']!,
+                isExternalLink: pendingExternalStockPaths.remove(
+                  state.uri.path,
+                ),
+              ),
+            ),
+            routes: [
+              GoRoute(
+                path: ChartRoute.path,
+                name: ChartRoute.name,
+                builder: (_, state) => FullscreenChartScreen(
+                  instrumentId: state.pathParameters['id']!,
+                ),
+              ),
+            ],
           ),
-        ),
+        ],
       ),
       GoRoute(
         path: StrategyRoute.path,

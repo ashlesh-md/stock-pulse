@@ -15,6 +15,7 @@ class PortfolioState {
     this.holdings = const [],
     this.loadingHoldings = false,
     this.holdingsFailed = false,
+    this.holdingsLoaded = false,
   });
 
   /// Newest first.
@@ -24,6 +25,10 @@ class PortfolioState {
   final List<Holding> holdings;
   final bool loadingHoldings;
   final bool holdingsFailed;
+
+  /// True once holdings have loaded successfully, so an empty list means
+  /// "no holdings" rather than "not fetched yet".
+  final bool holdingsLoaded;
 
   /// Live last price per position symbol, for mark-to-market P&L.
   final Map<String, double> ltp;
@@ -57,6 +62,7 @@ class PortfolioState {
     List<Holding>? holdings,
     bool? loadingHoldings,
     bool? holdingsFailed,
+    bool? holdingsLoaded,
     List<Position>? positions,
     Map<String, Quote>? quotes,
     Map<String, double>? ltp,
@@ -65,6 +71,7 @@ class PortfolioState {
     holdings: holdings ?? this.holdings,
     loadingHoldings: loadingHoldings ?? this.loadingHoldings,
     holdingsFailed: holdingsFailed ?? this.holdingsFailed,
+    holdingsLoaded: holdingsLoaded ?? this.holdingsLoaded,
     positions: positions ?? this.positions,
     quotes: quotes ?? this.quotes,
     ltp: ltp ?? this.ltp,
@@ -79,6 +86,7 @@ class PortfolioState {
       listEquals(other.holdings, holdings) &&
       other.loadingHoldings == loadingHoldings &&
       other.holdingsFailed == holdingsFailed &&
+      other.holdingsLoaded == holdingsLoaded &&
       mapEquals(other.ltp, ltp);
 
   @override
@@ -91,6 +99,7 @@ class PortfolioState {
     Object.hashAll(holdings),
     loadingHoldings,
     holdingsFailed,
+    holdingsLoaded,
     Object.hashAllUnordered(
       ltp.entries.map((e) => Object.hash(e.key, e.value)),
     ),

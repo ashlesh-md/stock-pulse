@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:stock_pulse/app/router/app_route.dart';
 import 'package:stock_pulse/app/router/navigation.dart';
 import 'package:stock_pulse/core/error/app_error.dart';
@@ -8,11 +11,11 @@ import 'package:stock_pulse/core/feedback/domain/feedback_message.dart';
 import 'package:stock_pulse/core/l10n/l10n_context.dart';
 import 'package:stock_pulse/core/widgets/connection_badge.dart';
 import 'package:stock_pulse/core/widgets/error_view.dart';
+import 'package:stock_pulse/features/chart/presentation/chart_toolbar.dart';
+import 'package:stock_pulse/features/chart/presentation/chart_view.dart';
 import 'package:stock_pulse/features/market/di/market_providers.dart';
 import 'package:stock_pulse/features/market/domain/instrument.dart';
 import 'package:stock_pulse/features/market/presentation/widgets/range_bar.dart';
-import 'package:stock_pulse/features/market/presentation/widgets/stock_chart.dart';
-import 'package:stock_pulse/features/market/presentation/widgets/stock_chart_toolbar.dart';
 import 'package:stock_pulse/features/market/presentation/widgets/stock_depth.dart';
 import 'package:stock_pulse/features/market/presentation/widgets/stock_header.dart';
 import 'package:stock_pulse/features/market/presentation/widgets/stock_stats.dart';
@@ -36,6 +39,23 @@ class StockDetailScreen extends ConsumerStatefulWidget {
 
 class _StockDetailScreenState extends ConsumerState<StockDetailScreen> {
   bool _invalidInstrumentHandled = false;
+  Orientation? _lastOrientation;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final orientation = MediaQuery.orientationOf(context);
+    if (_lastOrientation == Orientation.portrait &&
+        orientation == Orientation.landscape) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted ||
+            GoRouter.maybeOf(context)?.state.name != StockRoute.name) {
+          return;
+        }
+        unawaited(context.pushTo(ChartRoute(widget.instrumentId)));
+      });
+    }
+    _lastOrientation = orientation;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +89,18 @@ class _StockDetailScreenState extends ConsumerState<StockDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.instrumentId),
+        leading: GoRouter.maybeOf(context) == null
+            ? null
+            : BackButton(
+                onPressed: () {
+                  final router = GoRouter.of(context);
+                  if (router.canPop()) {
+                    router.pop();
+                  } else {
+                    context.goTo(const WatchlistRoute());
+                  }
+                },
+              ),
         actions: const [ConnectionBadge()],
       ),
       body: switch ((hasData, error, kind)) {
@@ -96,10 +128,10 @@ class _StockDetailScreenState extends ConsumerState<StockDetailScreen> {
     children: [
       StockHeader(instrumentId: widget.instrumentId),
       const SizedBox(height: 8),
-      StockChartToolbar(instrumentId: widget.instrumentId),
+      ChartToolbar(instrumentId: widget.instrumentId),
       SizedBox(
         height: 320,
-        child: StockChart(instrumentId: widget.instrumentId),
+        child: ChartView(instrumentId: widget.instrumentId),
       ),
       RangeBar(instrumentId: widget.instrumentId),
       const Divider(height: 24),

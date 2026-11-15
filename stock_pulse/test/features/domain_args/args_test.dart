@@ -52,12 +52,15 @@ void main() {
       instrumentId: 'INFY',
       side: OrderSide.sell,
       lots: 2,
+      quantity: 75,
       product: ProductType.mis,
       limitPrice: 10,
       source: OrderSource.ai,
     );
     expect(t2.instrumentId, 'INFY');
     expect(t2.lots, 2);
+    expect(t2.quantity, 75);
+    expect(t2, isNot(t2.copyWith(quantity: 150)));
     expect(t2.product, ProductType.mis);
     expect(t2.limitPrice, 10);
     expect(t.copyWith(), t);

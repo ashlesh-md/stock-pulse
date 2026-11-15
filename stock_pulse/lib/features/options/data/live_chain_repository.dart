@@ -68,16 +68,21 @@ class _LiveChainFeed implements ChainFeed {
           current = value;
           controller.addSync(value);
         }
-      } else if (m['type'] == 'ka' &&
-          (m['chains'] as List? ?? const []).contains(_request.chainId)) {
+      } else if (m['type'] == 'ka') {
         final previous = current;
-        if (previous != null) {
-          current = previous.copyWith(
-            asOf: DateTime.fromMillisecondsSinceEpoch(
-              m['asOf']! as int,
-              isUtc: true,
-            ),
-          );
+        final confirmed = parseJson(
+          () => (m['chains'] as List? ?? const []).contains(_request.chainId)
+              ? DateTime.fromMillisecondsSinceEpoch(
+                  m['asOf']! as int,
+                  isUtc: true,
+                )
+              : null,
+        );
+        if ((previous, confirmed) case (
+          final ChainView view,
+          Success(value: final DateTime asOf),
+        )) {
+          current = view.copyWith(asOf: asOf);
           controller.addSync(current!);
         }
       }

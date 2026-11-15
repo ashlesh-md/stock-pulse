@@ -10,10 +10,12 @@ import 'package:stock_pulse/core/error/app_error.dart';
 import 'package:stock_pulse/core/error/result.dart';
 import 'package:stock_pulse/core/feedback/di/feedback_providers.dart';
 import 'package:stock_pulse/core/feedback/domain/feedback_message.dart';
+import 'package:stock_pulse/core/l10n/app_strings.dart';
 import 'package:stock_pulse/core/l10n/di/l10n_providers.dart';
 import 'package:stock_pulse/core/l10n/strings/order_strings.dart';
 import 'package:stock_pulse/core/storage/di/storage_providers.dart';
 import 'package:stock_pulse/features/orders/application/order_ticket_state.dart';
+import 'package:stock_pulse/features/orders/application/ticket_block_message.dart';
 import 'package:stock_pulse/features/orders/di/order_preflight_provider.dart';
 import 'package:stock_pulse/features/orders/di/orders_data_providers.dart';
 import 'package:stock_pulse/features/orders/domain/order.dart'
@@ -42,6 +44,10 @@ class OrderTicketController extends Notifier<OrderTicketState> {
   String? _key;
   _Draft? _pending;
 
+  /// True once the request may have reached the server; until then a
+  /// failure can drop the key safely.
+  bool _sent = false;
+
   static const _maxRetries = 2;
   static const _checkStatusAfter = Duration(seconds: 3);
 
@@ -65,7 +71,6 @@ class OrderTicketController extends Notifier<OrderTicketState> {
   }) async {
     final strings = ref.read(stringsProvider);
     if (state.submitting) return strings.orders.submitting;
-    if (state.uncertain) return strings.orders.pendingPrevious;
     _log(Events.orderConfirmTapped(type.name));
     final draft = (
       side: side,
@@ -76,8 +81,25 @@ class OrderTicketController extends Notifier<OrderTicketState> {
       lots: lots,
       triggerPrice: triggerPrice,
     );
-    if (_pending != null && _pending != draft) {
-      return strings.orders.pendingPrevious;
+    // An uncertain order blocks the ticket until the server says what became
+    // of it. Once it does, the same order is reported, never sent again.
+    if (state.uncertain || (_pending != null && _pending != draft)) {
+      final same = _pending == draft;
+      state = state.copyWith(submitting: true);
+      Order? settled;
+      try {
+        settled = await _settledPending();
+      } on Object {
+        settled = null;
+      }
+      if (settled == null) {
+        if (ref.mounted) state = state.copyWith(submitting: false);
+        return strings.orders.pendingPrevious;
+      }
+      if (same) {
+        _announcePlaced(settled, strings);
+        return null;
+      }
     }
     if (_pending == null) {
       final block = ref.read(orderPreflightProvider)(
@@ -94,7 +116,7 @@ class OrderTicketController extends Notifier<OrderTicketState> {
         if (block == TicketBlock.unavailable) {
           _log(Events.orderBlockedStale);
         }
-        return blockMessage(strings.orders, block);
+        return ticketBlockMessage(strings.orders, block);
       }
     }
     _pending = draft;
@@ -103,6 +125,36 @@ class OrderTicketController extends Notifier<OrderTicketState> {
       (_) => Random.secure().nextInt(256).toRadixString(16).padLeft(2, '0'),
     ).join();
     state = const OrderTicketState(submitting: true);
+    _sent = false;
+    try {
+      return await _send(draft, strings);
+    } on Object {
+      if (!_sent) {
+        // Nothing reached the server: forget the key so the next tap is a
+        // fresh order instead of a wait on one that never existed.
+        _key = null;
+        _pending = null;
+        if (ref.mounted) state = const OrderTicketState();
+        return strings.orders.notPlaced(strings.errors.unknown);
+      }
+      // It may have been placed: keep the key, so a retry can never place a
+      // second order.
+      if (ref.mounted) state = const OrderTicketState(uncertain: true);
+      return strings.orders.orderStatusUnknown;
+    }
+  }
+
+  Future<String?> _send(_Draft draft, AppStrings strings) async {
+    final request = OrderRequest(
+      symbol: symbol,
+      side: draft.side,
+      type: draft.type,
+      quantity: draft.quantity,
+      limitPrice: draft.limitPrice,
+      product: draft.product,
+      lots: draft.lots,
+      triggerPrice: draft.triggerPrice,
+    );
     final statusTimer = Timer(_checkStatusAfter, () {
       if (ref.mounted && state.submitting) {
         state = state.copyWith(checkingStatus: true);
@@ -115,39 +167,20 @@ class OrderTicketController extends Notifier<OrderTicketState> {
           (store) => store.put(
             PendingOrder(
               clientKey: key,
-              request: OrderRequest(
-                symbol: symbol,
-                side: side,
-                type: type,
-                quantity: quantity,
-                limitPrice: limitPrice,
-                product: product,
-                lots: lots,
-                triggerPrice: triggerPrice,
-              ),
+              request: request,
               createdAt: DateTime.now().toUtc(),
             ),
           ),
         );
     _log(
       Events.orderSubmitted(
-        kind: type.name,
-        product: product.name,
+        kind: draft.type.name,
+        product: draft.product.name,
         source: 'manual',
       ),
     );
-    final result = await _placeAndCheck(
-      OrderRequest(
-        symbol: symbol,
-        side: side,
-        type: type,
-        quantity: quantity,
-        limitPrice: limitPrice,
-        product: product,
-        lots: lots,
-        triggerPrice: triggerPrice,
-      ),
-    );
+    _sent = true;
+    final result = await _placeAndCheck(request);
     statusTimer.cancel();
     if (!ref.mounted) return strings.orders.pendingPrevious;
     _log(
@@ -173,18 +206,7 @@ class OrderTicketController extends Notifier<OrderTicketState> {
         _key = null;
         _pending = null;
         state = const OrderTicketState();
-        ref
-            .read(feedbackControllerProvider.notifier)
-            .show(
-              FeedbackMessage(
-                key: 'orders.placed.${order.id}',
-                text: strings.orders.withId(
-                  order.id,
-                  orderSummary(order, strings.orders),
-                ),
-                kind: FeedbackKind.success,
-              ),
-            );
+        _announcePlaced(order, strings);
         return null;
       case PlaceRejected(:final code, :final message):
         await ref
@@ -221,6 +243,40 @@ class OrderTicketController extends Notifier<OrderTicketState> {
     }
   }
 
+  /// The uncertain order once the server knows it, which frees the ticket;
+  /// null while it is still unknown.
+  Future<Order?> _settledPending() async {
+    final key = _key;
+    if (key == null) return null;
+    final lookup = await ref
+        .read(orderRepositoryProvider)
+        .getOrder(clientKey: key);
+    if (lookup case Success(value: final Order order?)
+        when order.clientKey == key) {
+      await ref
+          .read(pendingOrderStoreProvider.future)
+          .then((store) => store.remove(key));
+      _key = null;
+      _pending = null;
+      if (ref.mounted) state = const OrderTicketState();
+      return order;
+    }
+    return null;
+  }
+
+  void _announcePlaced(Order order, AppStrings strings) => ref
+      .read(feedbackControllerProvider.notifier)
+      .show(
+        FeedbackMessage(
+          key: 'orders.placed.${order.id}',
+          text: strings.orders.withId(
+            order.id,
+            orderSummary(order, strings.orders),
+          ),
+          kind: FeedbackKind.success,
+        ),
+      );
+
   Future<PlaceOutcome> _placeAndCheck(OrderRequest request) async {
     final repository = ref.read(orderRepositoryProvider);
     for (var attempt = 0; attempt <= _maxRetries; attempt++) {
@@ -234,20 +290,4 @@ class OrderTicketController extends Notifier<OrderTicketState> {
     }
     return const PlaceTimedOut();
   }
-
-  static String blockMessage(OrderStrings strings, TicketBlock block) =>
-      switch (block) {
-        TicketBlock.unavailable => strings.blockUnavailable,
-        TicketBlock.closed => strings.blockClosed,
-        TicketBlock.preOpen => strings.blockPreOpen,
-        TicketBlock.instrument => strings.rejectedSymbol,
-        TicketBlock.quantity => strings.rejectedQuantity,
-        TicketBlock.price => strings.rejectedPrice,
-        TicketBlock.trigger => strings.blockTrigger,
-        TicketBlock.product => strings.blockProduct,
-        TicketBlock.expired => strings.blockExpired,
-        TicketBlock.cutoff => strings.blockCutoff,
-        TicketBlock.risk => strings.blockRisk,
-        TicketBlock.funds => strings.blockFunds,
-      };
 }

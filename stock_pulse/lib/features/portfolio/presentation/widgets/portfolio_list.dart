@@ -60,17 +60,20 @@ class PortfolioList extends ConsumerWidget {
 
   List<WidgetBuilder> _holdings(BuildContext context, WidgetRef ref) {
     final s = context.strings.portfolio;
-    final (holdings, loading, failed) = ref.watch(
+    final (holdings, loaded, failed) = ref.watch(
       portfolioControllerProvider.select(
         (a) => (
           a.value?.holdings ?? const [],
-          a.value?.loadingHoldings ?? false,
+          a.value?.holdingsLoaded ?? false,
           a.value?.holdingsFailed ?? false,
         ),
       ),
     );
+    // A reload keeps the current rows, or the empty state, on screen; only
+    // the first load gets a spinner.
+    final waiting = holdings.isEmpty && !failed && !loaded;
     return [
-      if (loading)
+      if (waiting)
         (_) => const Padding(
           padding: EdgeInsets.all(16),
           child: Center(child: CircularProgressIndicator()),
@@ -83,7 +86,7 @@ class PortfolioList extends ConsumerWidget {
           actionLabel: context.strings.common.retry,
           onAction: ref.read(portfolioControllerProvider.notifier).loadHoldings,
         ),
-      if (!loading && !failed && holdings.isEmpty)
+      if (!waiting && !failed && holdings.isEmpty)
         (context) => _empty(context, s.holdings, s.noHoldings),
       for (final h in holdings)
         (context) => _tile(

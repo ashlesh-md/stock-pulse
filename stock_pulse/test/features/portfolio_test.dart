@@ -122,6 +122,11 @@ void main() {
               .symbol,
           'TCS',
         );
+        // A holding that arrives on the stream gets live prices too.
+        final watched =
+            verify(() => market.watchQuotes(captureAny(), any())).captured.last
+                as List<String>;
+        expect(watched, contains('TCS'));
       },
     );
 

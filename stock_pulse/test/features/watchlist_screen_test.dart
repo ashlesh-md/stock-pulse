@@ -182,7 +182,7 @@ void main() {
       find.descendant(
         of: find.ancestor(
           of: find.text(symbol),
-          matching: find.byType(ListTile),
+          matching: find.byType(QuoteTile),
         ),
         matching: find.byType(SpPriceCell),
       ),

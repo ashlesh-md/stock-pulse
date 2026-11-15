@@ -21,7 +21,8 @@ class _Empty extends PortfolioController {
   Future<void> refresh() async {}
 
   @override
-  Future<void> loadHoldings() async {}
+  Future<void> loadHoldings() async =>
+      state = AsyncData(state.requireValue.copyWith(holdingsLoaded: true));
 }
 
 void main() {

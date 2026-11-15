@@ -3,6 +3,10 @@ import 'package:stock_pulse/core/analytics/di/analytics_providers.dart';
 import 'package:stock_pulse/core/error/result.dart';
 import 'package:stock_pulse/core/network/di/network_providers.dart';
 import 'package:stock_pulse/core/storage/di/storage_providers.dart';
+import 'package:stock_pulse/features/chart/di/chart_data_providers.dart';
+import 'package:stock_pulse/features/chart/di/chart_providers.dart';
+import 'package:stock_pulse/features/chart/di/chart_studies_providers.dart';
+import 'package:stock_pulse/features/chart/di/drawings_providers.dart';
 import 'package:stock_pulse/features/market/di/market_data_providers.dart';
 import 'package:stock_pulse/features/portfolio/di/portfolio_data_providers.dart';
 
@@ -30,10 +34,14 @@ class DemoController extends Notifier<AsyncValue<void>> {
     final prefs = await ref.read(localPrefsProvider.future);
     await Future.wait([
       prefs.clear(),
+      ref.read(chartStoreProvider).clearAll(),
       ref.read(snapshotStoreProvider).clear(),
       ref.read(analyticsProvider).reset(),
     ]);
     if (!ref.mounted) return;
+    ref.invalidate(drawingsControllerProvider);
+    ref.invalidate(studiesControllerProvider);
+    ref.invalidate(chartControllerProvider);
     ref.invalidate(localPrefsProvider);
     ref.invalidate(marketRepositoryProvider);
     ref.invalidate(portfolioRepositoryProvider);

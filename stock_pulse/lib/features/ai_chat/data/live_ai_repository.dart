@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:math';
 
 import 'package:stock_pulse/core/error/app_error.dart';
@@ -13,6 +14,8 @@ typedef LinePoster = Stream<Map<String, Object?>> Function(
   String path,
   Object body,
 );
+
+final _loggedUnsupportedCardTypes = <String>{};
 
 class LiveAiRepository implements AiRepository {
   LiveAiRepository({required this._postLines, String Function()? newRequestId})
@@ -73,8 +76,8 @@ class LiveAiRepository implements AiRepository {
 /// Null for a line this client does not handle, so a newer server can add
 /// event kinds without breaking older apps.
 AiEvent? aiEventFromLine(Map<String, Object?> line) => switch (line['e']) {
-  'card' when (line['card'] as Map<String, Object?>).isNotEmpty => CardAdded(
-    AiCard.fromJson(line['card']! as Map<String, Object?>),
+  'card' when (line['card'] as Map<String, Object?>).isNotEmpty => _cardAdded(
+    line['card']! as Map<String, Object?>,
   ),
   'start' => AnswerStarted(
     answerId: line['answerId']! as String,
@@ -99,6 +102,22 @@ AiEvent? aiEventFromLine(Map<String, Object?> line) => switch (line['e']) {
   ),
   _ => null,
 };
+
+CardAdded _cardAdded(Map<String, Object?> json) {
+  final card = AiCard.fromJson(json);
+  if (card.type == 'unknown') {
+    final rawType = json['type']?.toString() ?? 'unknown';
+    final version = json['v']?.toString() ?? 'missing';
+    final key = '$rawType@$version';
+    if (_loggedUnsupportedCardTypes.add(key)) {
+      developer.log(
+        'Unsupported AI card type/version: $key; using its text fallback',
+        name: 'stock_pulse.ai',
+      );
+    }
+  }
+  return CardAdded(card);
+}
 
 String _randomRequestId() {
   final random = Random.secure();

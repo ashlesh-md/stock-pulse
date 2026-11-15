@@ -17,6 +17,7 @@ import 'package:stock_pulse/features/market/domain/instrument.dart';
 import 'package:stock_pulse/features/market/domain/market_repository.dart';
 import 'package:stock_pulse/features/market/domain/quote.dart';
 import 'package:stock_pulse/features/market/presentation/screens/watchlist_screen.dart';
+import 'package:stock_pulse/features/market/presentation/widgets/quote_tile.dart';
 
 class _MarketRepository extends Mock implements MarketRepository {}
 
@@ -79,7 +80,7 @@ void main() {
 
   SpPriceCell price(WidgetTester tester) => tester.widget<SpPriceCell>(
     find.descendant(
-      of: find.ancestor(of: find.text('TCS'), matching: find.byType(ListTile)),
+      of: find.ancestor(of: find.text('TCS'), matching: find.byType(QuoteTile)),
       matching: find.byType(SpPriceCell),
     ),
   );

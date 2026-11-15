@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'package:stock_pulse/app/layout/fold_split.dart';
 import 'package:stock_pulse/app/layout/window_class.dart';
 
 /// A list pane beside a detail pane on expanded windows; [primary] alone,
@@ -18,6 +19,7 @@ class AdaptiveTwoPane extends StatelessWidget {
     this.secondary,
     this.primaryPaneWidth = ContentWidth.listPane,
     this.primaryMaxWidth = ContentWidth.list,
+    this.globalOffset = Offset.zero,
   });
 
   final Widget primary;
@@ -30,26 +32,83 @@ class AdaptiveTwoPane extends StatelessWidget {
   /// Width cap of [primary] when it is shown alone.
   final double primaryMaxWidth;
 
+  final Offset globalOffset;
+
   @override
   Widget build(BuildContext context) {
-    final twoPanes = context.windowClass.showsTwoPanes;
     return LayoutBuilder(
-      builder: (context, constraints) => Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(
-            width: twoPanes
-                ? primaryPaneWidth
-                : math.min(primaryMaxWidth, constraints.maxWidth),
+      builder: (context, constraints) {
+        final feature = _splitFeature(context, constraints);
+        final primaryContent = Center(
+          child: SizedBox(
+            width: math.min(primaryMaxWidth, constraints.maxWidth),
             child: primary,
           ),
-          if (twoPanes) ...[
-            const VerticalDivider(width: 1),
-            Expanded(child: secondary ?? placeholder),
+        );
+        if (feature != null) {
+          return _foldSplit(
+            axis: feature.axis,
+            bounds: feature.bounds,
+            primary: primaryContent,
+            secondary: secondary ?? placeholder,
+            constraints: constraints,
+          );
+        }
+        final twoPanes = context.windowClass.showsTwoPanes;
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              width: twoPanes
+                  ? primaryPaneWidth
+                  : math.min(primaryMaxWidth, constraints.maxWidth),
+              child: primary,
+            ),
+            if (twoPanes) ...[
+              const VerticalDivider(width: 1),
+              Expanded(child: secondary ?? placeholder),
+            ],
           ],
+        );
+      },
+    );
+  }
+
+  ({Axis axis, Rect bounds})? _splitFeature(
+    BuildContext context,
+    BoxConstraints constraints,
+  ) => foldSplitOf(
+    MediaQuery.displayFeaturesOf(context),
+    constraints.biggest,
+    offset: globalOffset,
+  );
+
+  Widget _foldSplit({
+    required Axis axis,
+    required Rect bounds,
+    required Widget primary,
+    required Widget secondary,
+    required BoxConstraints constraints,
+  }) {
+    if (axis == Axis.vertical) {
+      return Column(
+        children: [
+          SizedBox(height: bounds.top, child: primary),
+          SizedBox(height: bounds.height),
+          SizedBox(
+            height: constraints.maxHeight - bounds.bottom,
+            child: secondary,
+          ),
         ],
-      ),
+      );
+    }
+    return Row(
+      children: [
+        SizedBox(width: bounds.left, child: primary),
+        SizedBox(width: bounds.width),
+        SizedBox(width: constraints.maxWidth - bounds.right, child: secondary),
+      ],
     );
   }
 }

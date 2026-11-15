@@ -10,6 +10,10 @@ import 'package:stock_pulse/core/network/di/network_providers.dart';
 import 'package:stock_pulse/core/observability/di/observability_providers.dart';
 import 'package:stock_pulse/core/storage/di/storage_providers.dart';
 import 'package:stock_pulse/core/storage/domain/local_prefs.dart';
+import 'package:stock_pulse/features/chart/di/chart_data_providers.dart';
+import 'package:stock_pulse/features/chart/domain/chart_layout.dart';
+import 'package:stock_pulse/features/chart/domain/indicators/study_kind.dart';
+import 'package:stock_pulse/features/chart/domain/indicators/study_spec.dart';
 import 'package:stock_pulse/features/market/di/market_data_providers.dart';
 import 'package:stock_pulse/features/more/di/demo_providers.dart';
 import 'package:stock_pulse/features/more/di/settings_providers.dart';
@@ -44,6 +48,7 @@ void main() {
     c = ProviderContainer.test(
       overrides: [
         debugClientProvider.overrideWithValue(debug),
+        chartDirectoryProvider.overrideWithValue(null),
         localPrefsProvider.overrideWith((ref) async => prefs),
         snapshotStoreProvider.overrideWithValue(store),
         analyticsSinksProvider.overrideWithValue([sink]),
@@ -74,8 +79,14 @@ void main() {
         'repositories', () async {
       expect(await c.read(riskNoticeProvider.future), isTrue);
 
+      final charts = c.read(chartStoreProvider);
+      await charts.save(
+        'TCS',
+        ChartLayout(studies: const [StudySpec(kind: StudyKind.rsi)]),
+      );
       c.read(marketRepositoryProvider);
       await c.read(demoControllerProvider.notifier).reset();
+      expect((await charts.load('TCS')).studies, isEmpty);
       expect(debug.resets, [null]);
       expect(prefs.clears, 1);
       expect(store.clears, 1);

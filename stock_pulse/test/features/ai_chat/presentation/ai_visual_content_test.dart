@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stock_pulse/features/ai_chat/domain/ai_card.dart';
 import 'package:stock_pulse/features/ai_chat/presentation/widgets/ai_visual_content.dart';
-import 'package:stock_pulse/features/market/presentation/widgets/candle_chart.dart';
+import 'package:stock_pulse/features/chart/presentation/candle_chart.dart';
 import 'package:stock_pulse/features/strategy/presentation/widgets/payoff_chart.dart';
 
 import '../../../helpers/sp_app.dart';

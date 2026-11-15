@@ -7,6 +7,7 @@ OrderDraft _draft({
   OrderSide side = OrderSide.buy,
   double? limit,
   int? lots,
+  int? units,
   ProductType? product,
   int lotSize = 1,
 }) => OrderDraft.fromSeed((
@@ -14,6 +15,7 @@ OrderDraft _draft({
     instrumentId: 'TCS',
     side: side,
     lots: lots,
+    quantity: units,
     limitPrice: limit,
     product: product,
   ),
@@ -23,6 +25,14 @@ OrderDraft _draft({
 ));
 
 void main() {
+  test('a seed in units becomes whole lots: 75 units of a 75 lot is 1 lot', () {
+    expect(_draft(units: 75, lotSize: 75).quantity, 75);
+    expect(_draft(units: 150, lotSize: 75).count, 2);
+    expect(_draft(units: 10, lotSize: 75).count, 1);
+    expect(_draft(units: 7).quantity, 7);
+    expect(_draft(units: 150, lots: 1, lotSize: 75).count, 1);
+  });
+
   test('a seed without a limit is a market order of one unit', () {
     final d = _draft();
     expect(d.type, OrderType.market);

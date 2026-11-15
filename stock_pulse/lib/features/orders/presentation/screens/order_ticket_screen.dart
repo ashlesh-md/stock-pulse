@@ -44,13 +44,18 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
         title: Text(context.strings.orders.ticketTitle(args.instrumentId)),
       ),
       body: switch (contract) {
-        AsyncData(:final value) => Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 560),
-            child: Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: _ticket(value, args),
+        AsyncData(:final value) => LayoutBuilder(
+          builder: (context, constraints) => Align(
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              height: constraints.maxHeight,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: _ticket(value, args),
+                ),
+              ),
             ),
           ),
         ),

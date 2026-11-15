@@ -76,5 +76,6 @@ void main() {
       ),
     );
     expect(find.text('Answer stopped'), findsOneWidget);
+    expect(find.text('Retry'), findsOneWidget);
   });
 }

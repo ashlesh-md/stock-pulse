@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:stock_pulse/features/orders/domain/order.dart'
     show OrderSide, OrderType, ProductType;
@@ -39,7 +41,12 @@ class OrderDraft {
     product:
         seed.args.product ??
         (seed.lotSize > 1 ? ProductType.nrml : ProductType.cnc),
-    count: seed.args.lots ?? 1,
+    count:
+        seed.args.lots ??
+        switch (seed.args.quantity) {
+          final int units => max(1, units ~/ seed.lotSize),
+          null => 1,
+        },
     lotSize: seed.lotSize,
     tickSize: seed.tickSize,
     ltp: seed.ltp,

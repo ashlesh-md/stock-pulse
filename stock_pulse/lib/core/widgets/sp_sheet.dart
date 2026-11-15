@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stock_pulse/core/feedback/di/feedback_providers.dart';
+import 'package:stock_pulse/core/widgets/sheet_placement_scope.dart';
+import 'package:stock_pulse/core/widgets/sp_side_sheet.dart';
 
 /// Modal bottom sheet: safe area, drag handle, at most 90 % of the
 /// screen, scroll-controlled. Counts itself in `openSheetCountProvider` while
@@ -17,6 +19,9 @@ Future<T?> showSpSheet<T>(
   final count = container?.read(openSheetCountProvider.notifier);
   count?.inc();
   try {
+    if (SheetPlacementScope.usesSideSheet(context)) {
+      return await showSpSideSheet<T>(context, builder: builder);
+    }
     return await showModalBottomSheet<T>(
       context: context,
       isScrollControlled: true,

@@ -18,6 +18,10 @@ final class ErrorStringsEn implements ErrorStrings {
   @override
   String get unknown => 'Something went wrong. Try again.';
   @override
+  String get sessionExpired => 'Demo session expired.';
+  @override
+  String get restartDemo => 'Restart demo';
+  @override
   String get serverHint =>
       'Is the server running? cd market_server && dart run bin/server.dart';
 }

@@ -26,6 +26,7 @@ class MarketSocket {
     Random? random,
     this._clock = const SystemClock(),
     this._serverClock,
+    this._drops,
   }) : _connect = connect ?? WebSocketChannel.connect,
        _random = random ?? Random();
 
@@ -35,6 +36,7 @@ class MarketSocket {
   final Random _random;
   final Clock _clock;
   final ServerClock? _serverClock;
+  final FrameDropCounter? _drops;
   final _book = SubscriptionBook();
   final _gaps = SequenceGapDetector();
   DateTime? _lastDataAt;
@@ -188,7 +190,8 @@ class MarketSocket {
     final text = frameText(data);
     _log(outgoing: false, text);
     final msg = decodeFrame(text);
-    if (msg == null) return;
+    if (msg == null) return _drops?.drop('not_json');
+    if (msg['type'] is! String) return _drops?.drop('no_type');
     switch (msg['type']) {
       case 'welcome':
         _lastDataAt = _clock.now();

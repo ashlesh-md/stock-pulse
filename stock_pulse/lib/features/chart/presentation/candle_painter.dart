@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:stock_pulse/core/format/formatters.dart';
 import 'package:stock_pulse/core/l10n/strings/market_strings.dart';
 import 'package:stock_pulse/core/theme/sp_colors.dart';
+import 'package:stock_pulse/features/chart/presentation/candle_crosshair_paint.dart';
+import 'package:stock_pulse/features/chart/presentation/candle_geometry.dart';
+import 'package:stock_pulse/features/chart/presentation/chart_paint_text.dart';
 import 'package:stock_pulse/features/market/domain/candle.dart';
-import 'package:stock_pulse/features/market/presentation/widgets/candle_geometry.dart';
 
 /// Draws the price chart. Pure paint: every input is a field, so
 /// [shouldRepaint] can compare them.
@@ -24,6 +26,11 @@ class CandlePainter extends CustomPainter {
     required this.colors,
     required this.strings,
     this.showVolume = true,
+    this.logScale = false,
+    this.gridlines = true,
+    this.historyOnly = false,
+    this.liveOnly = false,
+    this.onPainted,
   });
 
   final List<Candle> candles;
@@ -41,9 +48,15 @@ class CandlePainter extends CustomPainter {
   final SpColors colors;
   final MarketStrings strings;
   final bool showVolume;
+  final bool logScale;
+  final bool gridlines;
+  final bool historyOnly;
+  final bool liveOnly;
+  final VoidCallback? onPainted;
 
   @override
   void paint(Canvas canvas, Size size) {
+    onPainted?.call();
     if (candles.isEmpty) return;
     final plotWidth = size.width - CandleGeometry.axisWidth;
     final (start, end) = CandleGeometry.visibleRange(
@@ -60,28 +73,49 @@ class CandlePainter extends CustomPainter {
     final priceHeight = showVolume ? chartBottom * 0.8 : chartBottom;
     final volumeTop = priceHeight + 8;
 
-    final (lo, hi) = CandleGeometry.priceBounds(
+    final (rawLo, rawHi) = CandleGeometry.priceBounds(
       visible,
       type,
       baseline: baseline,
     );
-    double y(double price) => (hi - price) / (hi - lo) * priceHeight;
+    final useLog = logScale && rawLo > 0 && rawHi > rawLo;
+    double y(double price) => CandleGeometry.priceY(
+      price,
+      rawLo,
+      rawHi,
+      priceHeight,
+      logarithmic: useLog,
+    );
+
     double x(int i) => (i + 0.5) * candleWidth; // centre of slot i
-    final maxVolume = visible.map((c) => c.volume).reduce(max).toDouble();
+    final volumeCandles = historyOnly && visible.length > 1
+        ? visible.take(visible.length - 1)
+        : visible;
+    final maxVolume = volumeCandles.map((c) => c.volume).reduce(max).toDouble();
 
     final grid = Paint()
       ..color = gridColor
       ..strokeWidth = 0.5;
-    for (var i = 0; i <= 4; i++) {
-      final price = lo + (hi - lo) * i / 4;
+    for (var i = 0; gridlines && !historyOnly && i <= 4; i++) {
+      final scaled = rawLo + (rawHi - rawLo) * i / 4;
+      final price = useLog
+          ? exp(log(rawLo) + (log(rawHi) - log(rawLo)) * i / 4)
+          : scaled;
       final gy = y(price);
       canvas.drawLine(Offset(0, gy), Offset(plotWidth, gy), grid);
-      _text(canvas, Fmt.number(price), Offset(plotWidth + 4, gy - 6));
+      paintChartText(
+        canvas,
+        textStyle,
+        Fmt.number(price),
+        Offset(plotWidth + 4, gy - 6),
+      );
     }
 
+    final first = liveOnly ? visible.length - 1 : 0;
+    final last = historyOnly ? visible.length - 1 : visible.length;
     final gap = candleWidth >= 4 ? candleWidth * 0.2 : 0.0;
     final bar = Paint();
-    for (var i = 0; showVolume && i < visible.length; i++) {
+    for (var i = first; showVolume && i < last; i++) {
       final c = visible[i];
       final vh = maxVolume == 0
           ? 0.0
@@ -104,14 +138,15 @@ class CandlePainter extends CustomPainter {
 
     switch (type) {
       case ChartType.line || ChartType.area:
-        final path = Path()..moveTo(x(0), y(visible.first.close));
-        for (var i = 1; i < visible.length; i++) {
+        final from = max(0, first - 1);
+        final path = Path()..moveTo(x(from), y(visible[from].close));
+        for (var i = from + 1; i < last; i++) {
           path.lineTo(x(i), y(visible[i].close));
         }
         if (type == ChartType.area) {
           final fill = Path.from(path)
-            ..lineTo(x(visible.length - 1), priceHeight)
-            ..lineTo(x(0), priceHeight)
+            ..lineTo(x(max(0, last - 1)), priceHeight)
+            ..lineTo(x(from), priceHeight)
             ..close();
           canvas.drawPath(
             fill,
@@ -138,7 +173,7 @@ class CandlePainter extends CustomPainter {
         // Vertical high–low line, open tick on the left, close tick on the right.
         final stroke = Paint()..strokeWidth = max(1.0, candleWidth * 0.12);
         final tick = max(1.0, candleWidth * 0.35);
-        for (var i = 0; i < visible.length; i++) {
+        for (var i = first; i < last; i++) {
           final c = visible[i];
           stroke.color = colors.directionOf(c.close - c.open);
           final mid = x(i);
@@ -158,7 +193,7 @@ class CandlePainter extends CustomPainter {
       case ChartType.candles || ChartType.heikinAshi:
         final body = Paint();
         final wick = Paint()..strokeWidth = 1;
-        for (var i = 0; i < visible.length; i++) {
+        for (var i = first; i < last; i++) {
           final c = visible[i];
           final color = colors.directionOf(c.close - c.open);
           body.color = color;
@@ -175,6 +210,8 @@ class CandlePainter extends CustomPainter {
           canvas.drawRect(Rect.fromLTRB(left, top, right, bottom), body);
         }
     }
+
+    if (historyOnly) return;
 
     // Baseline (1D: previous close), dotted.
     if (baseline != null) {
@@ -195,8 +232,9 @@ class CandlePainter extends CustomPainter {
     final span = visible.last.start.difference(visible.first.start);
     final every = max(1, (90 / candleWidth).round());
     for (var i = 0; i < visible.length; i += every) {
-      _text(
+      paintChartText(
         canvas,
+        textStyle,
         CandleGeometry.axisLabel(visible[i].start, span, interval),
         Offset(i * candleWidth, chartBottom + 2),
       );
@@ -211,73 +249,29 @@ class CandlePainter extends CustomPainter {
     for (var dx = 0.0; dx < plotWidth; dx += 6) {
       canvas.drawLine(Offset(dx, ly), Offset(min(dx + 3, plotWidth), ly), dash);
     }
-    _label(
+    paintChartLabel(
       canvas,
+      textStyle,
       Fmt.number(lastPrice),
       Offset(plotWidth + 2, ly - 8),
       trendColor,
       colors.surface0,
     );
 
-    // Crosshair.
     final index = crosshair;
     if (index != null && index >= start && index < end) {
-      final c = candles[index];
-      final cx = x(index - start);
-      final line = Paint()
-        ..color = textStyle.color!.withValues(alpha: 0.6)
-        ..strokeWidth = 0.7;
-      canvas.drawLine(Offset(cx, 0), Offset(cx, chartBottom), line);
-      final when = interval.isIntraday
-          ? Fmt.dayTime(c.start)
-          : Fmt.date(c.start);
-      final values = isLine
-          ? strings.crosshairClose(Fmt.number(c.close))
-          : strings.crosshairOhlc(
-              Fmt.number(c.open),
-              Fmt.number(c.high),
-              Fmt.number(c.low),
-              Fmt.number(c.close),
-            );
-      _label(
+      paintCandleCrosshair(
         canvas,
-        strings.crosshairLine(when, values, Fmt.compact(c.volume)),
-        const Offset(4, 4),
-        labelBackground,
-        textStyle.color!,
+        candle: candles[index],
+        x: x(index - start),
+        bottom: chartBottom,
+        interval: interval,
+        isLine: isLine,
+        style: textStyle,
+        background: labelBackground,
+        strings: strings,
       );
     }
-  }
-
-  void _text(Canvas canvas, String text, Offset at) {
-    (TextPainter(
-      text: TextSpan(text: text, style: textStyle),
-      textDirection: TextDirection.ltr,
-    )..layout()).paint(canvas, at);
-  }
-
-  void _label(
-    Canvas canvas,
-    String text,
-    Offset at,
-    Color background,
-    Color foreground,
-  ) {
-    final tp = TextPainter(
-      text: TextSpan(
-        text: text,
-        style: textStyle.copyWith(color: foreground),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(at.dx, at.dy, tp.width + 8, tp.height + 4),
-        const Radius.circular(3),
-      ),
-      Paint()..color = background,
-    );
-    tp.paint(canvas, at + const Offset(4, 2));
   }
 
   /// Repaint only when something drawn changed. `candles` is a new list
@@ -290,6 +284,8 @@ class CandlePainter extends CustomPainter {
       old.candleWidth != candleWidth ||
       old.offset != offset ||
       old.showVolume != showVolume ||
+      old.logScale != logScale ||
+      old.gridlines != gridlines ||
       old.crosshair != crosshair ||
       old.gridColor != gridColor ||
       old.colors != colors ||

@@ -11,6 +11,13 @@ class ServerClock {
 
   static const _maxSamples = 5;
 
+  /// A round trip this long spans a device time change, not the network.
+  static const _maxRttMs = 10000;
+
+  /// An offset this far from the current one means the device clock was
+  /// changed: older samples measured the old clock, so they are dropped.
+  static const _jumpMs = 1000;
+
   final Clock _device;
   final List<({int rttMs, int offsetMs})> _samples = [];
   Duration _offset = Duration.zero;
@@ -34,8 +41,10 @@ class ServerClock {
   void onPong(int sentTsMs, int serverTimeMs, DateTime receivedAt) {
     final received = receivedAt.millisecondsSinceEpoch;
     final rtt = received - sentTsMs;
-    if (rtt < 0) return; // device clock stepped back mid-ping
-    _samples.add((rttMs: rtt, offsetMs: serverTimeMs + rtt ~/ 2 - received));
+    if (rtt < 0 || rtt > _maxRttMs) return;
+    final offsetMs = serverTimeMs + rtt ~/ 2 - received;
+    if ((offsetMs - _offset.inMilliseconds).abs() > _jumpMs) _samples.clear();
+    _samples.add((rttMs: rtt, offsetMs: offsetMs));
     if (_samples.length > _maxSamples) _samples.removeAt(0);
     var best = _samples.first;
     for (final s in _samples) {

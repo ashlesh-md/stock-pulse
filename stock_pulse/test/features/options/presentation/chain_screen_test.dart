@@ -15,54 +15,20 @@ import 'package:stock_pulse/core/theme/app_theme.dart';
 import 'package:stock_pulse/core/visibility/di/visibility_providers.dart';
 import 'package:stock_pulse/core/visibility/domain/screen_id.dart';
 import 'package:stock_pulse/features/options/di/options_data_providers.dart';
-import 'package:stock_pulse/features/options/domain/chain_repository.dart';
 import 'package:stock_pulse/features/options/domain/chain_view.dart';
 import 'package:stock_pulse/features/options/domain/expiry.dart';
 import 'package:stock_pulse/features/options/presentation/screens/chain_screen.dart';
 import 'package:stock_pulse/features/orders/domain/order.dart';
 import 'package:stock_pulse/features/orders/domain/order_ticket_args.dart';
 
+import '../../../helpers/chain_fixtures.dart';
 import '../../../helpers/fake_local_prefs.dart';
 
-class _Repo extends Mock implements ChainRepository {}
-
-const _atm = 24500;
-final _strikes = [for (var i = -20; i <= 20; i++) _atm + i * 50];
-
-OptionCell _cell(String id, int oi, [bool greeks = false]) => OptionCell(
-  contractId: id,
-  ltp: 141.25,
-  change: 1,
-  oi: oi,
-  oiChange: id.endsWith('PE') ? -300 : 1200,
-  iv: greeks ? 13.4 : null,
-  delta: greeks ? .52 : null,
-);
-
-ChainView _view() => ChainView(
-  chainId: 'NIFTY:2026-11-09',
-  seq: 1,
-  asOf: DateTime.utc(2026, 11, 8),
-  spot: 24512.35,
-  atm: _atm,
-  status: ChainStatus.open,
-  strikes: _strikes,
-  rows: {
-    for (final k in _strikes)
-      k: ChainRow(
-        strike: k,
-        ce: _cell('NIFTY${k}CE', k == _atm ? 1520000 : 600000, k == _atm),
-        pe: k == _atm + 50 ? null : _cell('NIFTY${k}PE', 800000),
-      ),
-  },
-);
-
 void main() {
-  late _Repo repo;
+  late MockChainRepository repo;
   OrderTicketArgs? opened;
-
   setUp(() {
-    repo = _Repo();
+    repo = MockChainRepository();
     opened = null;
     when(() => repo.expiries('NIFTY')).thenAnswer(
       (_) async => Success([
@@ -87,12 +53,12 @@ void main() {
       ]),
     );
     when(() => repo.getChain('NIFTY', any()))
-        .thenAnswer((_) async => Success(_view()));
+        .thenAnswer((_) async => Success(fixtureChain()));
   });
-
   Future<void> pump(
     WidgetTester tester, {
     String initialLocation = '/options?u=NIFTY',
+    double textScale = 1,
   }) async {
     tester.view.physicalSize = const Size(700, 800);
     tester.view.devicePixelRatio = 1;
@@ -132,12 +98,32 @@ void main() {
           screenVisibleProvider(ScreenId.options).overrideWithValue(false),
           networkStatusProvider.overrideWith((ref) => const Stream.empty()),
         ],
-        child: MaterialApp.router(theme: AppTheme.dark(), routerConfig: router),
+        child: MaterialApp.router(
+          theme: AppTheme.dark(),
+          routerConfig: router,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(textScale)),
+            child: child!,
+          ),
+        ),
       ),
     );
     await tester.pumpAndSettle();
   }
 
+  testWidgets('large text keeps chain prices legible with taller rows', (
+    tester,
+  ) async {
+    await pump(tester, textScale: 2);
+    expect(
+      tester
+          .widgetList<ListView>(find.byType(ListView))
+          .any((list) => list.itemExtent == 96),
+      isTrue,
+    );
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('B4: expiry chips read 9 Nov with their tags', (tester) async {
     await pump(tester);
     expect(find.text('9 Nov  Expires today', findRichText: true), findsOne);
@@ -147,7 +133,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('2026-11-09'), findsNothing);
   });
-
   testWidgets('switching expiry keeps current content visible during loading', (
     tester,
   ) async {
@@ -155,7 +140,6 @@ void main() {
     when(() => repo.getChain('NIFTY', '2026-11-25'))
         .thenAnswer((_) => monthly.future);
     await pump(tester);
-
     final monthlyChip = find.text('25 Nov  Monthly', findRichText: true);
     await tester.drag(find.byType(ListView).first, const Offset(-180, 0));
     await tester.pumpAndSettle();
@@ -163,31 +147,27 @@ void main() {
     await tester.pump();
     verify(() => repo.getChain('NIFTY', '2026-11-25')).called(1);
     await tester.pump(const Duration(milliseconds: 80));
-
     expect(find.text('ATM'), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsNothing);
     expect(find.byType(FadeTransition), findsNothing);
-
-    monthly.complete(Success(_view()));
+    monthly.complete(Success(fixtureChain()));
     await tester.pumpAndSettle();
     expect(find.text('ATM'), findsOneWidget);
     expect(find.text('25 Nov  Monthly', findRichText: true), findsOneWidget);
   });
-
   testWidgets('B5: opens centred on ATM with marker, OI and change', (
     tester,
   ) async {
     await pump(tester);
     expect(find.text('ATM'), findsOneWidget);
     expect(find.text('24,500'), findsOneWidget);
-    expect(find.text(_strikes.first.toString()), findsNothing);
+    expect(find.text(fixtureStrikes.first.toString()), findsNothing);
     expect(find.text('15.20L'), findsOneWidget);
     expect(find.text('+1.2K'), findsWidgets);
     expect(find.text('OI'), findsNWidgets(2));
     final atmY = tester.getCenter(find.text('ATM')).dy;
     expect(atmY, greaterThan(300));
     expect(find.text('Back to ATM'), findsNothing);
-
     await tester.drag(find.text('24,500'), const Offset(0, 700));
     await tester.pumpAndSettle();
     expect(find.text('Back to ATM'), findsOneWidget);
@@ -196,7 +176,6 @@ void main() {
     expect(find.text('ATM'), findsOneWidget);
     expect(find.text('Back to ATM'), findsNothing);
   });
-
   testWidgets('chain columns can be selected and LTP stays enabled', (
     tester,
   ) async {
@@ -216,7 +195,6 @@ void main() {
     expect(find.text('OI'), findsNWidgets(2));
     expect(find.text('LTP'), findsNWidgets(2));
   });
-
   testWidgets('a call cell opens Buy / Sell; Buy opens the ticket', (
     tester,
   ) async {
@@ -232,7 +210,6 @@ void main() {
     expect(opened?.product, ProductType.nrml);
     expect(opened?.source, OrderSource.chain);
   });
-
   testWidgets('a failed load shows Retry, which loads again', (tester) async {
     when(() => repo.expiries('NIFTY'))
         .thenAnswer((_) async => const Failure(NetworkError()));
@@ -242,7 +219,6 @@ void main() {
     await tester.pumpAndSettle();
     verify(() => repo.expiries('NIFTY')).called(2);
   });
-
   testWidgets('the column picker adds IV and delta to both sides', (
     tester,
   ) async {

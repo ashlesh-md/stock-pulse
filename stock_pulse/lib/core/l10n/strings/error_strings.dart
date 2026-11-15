@@ -11,6 +11,10 @@ abstract interface class ErrorStrings {
   String get outdated;
   String get unknown;
 
+  /// A 401: the demo session token was rejected.
+  String get sessionExpired;
+  String get restartDemo;
+
   /// Debug builds only: how to start the local server.
   String get serverHint;
 }
@@ -18,6 +22,7 @@ abstract interface class ErrorStrings {
 /// The text for [error], which may be any object an `AsyncError` holds.
 String errorText(ErrorStrings strings, Object error) => switch (error) {
   NetworkError() => strings.network,
+  ServerError(statusCode: 401) => strings.sessionExpired,
   ServerError(statusCode: 404) => strings.outdated,
   ServerError() => strings.server,
   ParseError() => strings.parse,

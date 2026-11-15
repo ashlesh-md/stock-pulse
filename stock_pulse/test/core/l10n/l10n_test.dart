@@ -18,7 +18,7 @@ void main() {
     test('English for en_IN and for unknown languages', () {
       expect(appStringsFor(defaultLocale), isA<AppStringsEn>());
       expect(appStringsFor(const Locale('xx')), isA<AppStringsEn>());
-      expect(supportedLocales, [defaultLocale]);
+      expect(supportedLocales, [defaultLocale, pseudoLocale]);
     });
   });
 

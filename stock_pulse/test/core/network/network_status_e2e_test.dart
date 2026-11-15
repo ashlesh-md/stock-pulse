@@ -45,6 +45,11 @@ void main() {
         await server.close();
       });
 
+      var hasQuote = false;
+      final messages = socket.messages.listen((message) {
+        if (message['type'] == 'ticks') hasQuote = true;
+      });
+      addTearDown(messages.cancel);
       socket
         ..start()
         ..subscribeQuotes(['TCS'], FeedMode.ltp);
@@ -53,13 +58,19 @@ void main() {
         timeout: const Duration(seconds: 10),
       );
 
-      server.server.gateway.freezeAll(const Duration(seconds: 8));
+      await eventually(() {
+        server.step();
+        return hasQuote;
+      });
+      server.server.gateway.freezeAll(const Duration(minutes: 1));
       await eventually(
         () => seen.lastOrNull == NetworkStatus.delayed,
         timeout: const Duration(seconds: 10),
       );
       // The feed becomes delayed well before the socket stale timeout.
       expect(socket.status, isA<SocketConnected>());
+      server.server.gateway.freezeAll(Duration.zero);
+      server.step();
 
       await eventually(
         () => seen.lastOrNull == NetworkStatus.live,

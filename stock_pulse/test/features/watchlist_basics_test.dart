@@ -234,7 +234,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Edit'));
+    await tester.tap(find.byTooltip('Edit'));
     await tester.pump();
     final handle = find.byIcon(AppIcons.reorder).first;
     final gesture = await tester.startGesture(tester.getCenter(handle));
@@ -256,20 +256,20 @@ void main() {
     expect(find.byIcon(AppIcons.reorder), findsNothing);
     expect(find.byTooltip('Pin favourite'), findsOneWidget);
 
-    await tester.tap(find.text('Edit'));
+    await tester.tap(find.byTooltip('Edit'));
     await tester.pump();
     expect(find.byIcon(AppIcons.reorder), findsOneWidget);
     expect(find.byTooltip('Pin favourite'), findsOneWidget);
 
-    await tester.tap(find.text('Done'));
+    await tester.tap(find.byTooltip('Done'));
     await tester.pump();
     expect(find.byIcon(AppIcons.reorder), findsNothing);
   });
 
   testWidgets('B15: no Edit button while the list is loading', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.text('Edit'), findsNothing);
+    expect(find.byTooltip('Edit'), findsNothing);
     await tester.pumpAndSettle();
-    expect(find.text('Edit'), findsOneWidget);
+    expect(find.byTooltip('Edit'), findsOneWidget);
   });
 }

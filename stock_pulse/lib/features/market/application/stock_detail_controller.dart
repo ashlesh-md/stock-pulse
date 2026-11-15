@@ -4,11 +4,14 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stock_pulse/core/analytics/di/analytics_providers.dart';
 import 'package:stock_pulse/core/analytics/domain/analytics_events.dart';
+import 'package:stock_pulse/core/error/app_error.dart';
 import 'package:stock_pulse/core/error/result.dart';
 import 'package:stock_pulse/core/network/domain/subscriptions.dart';
+import 'package:stock_pulse/features/chart/di/chart_route_providers.dart';
 import 'package:stock_pulse/features/market/application/stock_detail_state.dart';
 import 'package:stock_pulse/features/market/di/market_data_providers.dart';
 import 'package:stock_pulse/features/market/domain/candle.dart';
+import 'package:stock_pulse/features/market/domain/market_repository.dart';
 import 'package:stock_pulse/features/market/domain/quote.dart';
 
 /// The one controller for the stock detail screen: quote, chart (range,
@@ -30,8 +33,10 @@ class StockDetailController extends AsyncNotifier<StockDetailState> {
   @override
   Future<StockDetailState> build() async {
     final repo = ref.watch(marketRepositoryProvider);
-    const range = ChartRange.d1;
-    final interval = range.defaultInterval;
+    final selection = ref.watch(initialChartSelectionProvider(symbol));
+    final range = selection?.range ?? ChartRange.d1;
+    final interval = selection?.interval ?? range.defaultInterval;
+    final chartType = selection?.type ?? ChartType.candles;
     // Both requests in parallel: the screen waits for the slower one, not
     // the sum of both.
     final (instrument, candles, quotes) = await (
@@ -44,14 +49,22 @@ class StockDetailController extends AsyncNotifier<StockDetailState> {
       repo.getQuotes([symbol], full: true),
     ).wait;
     final loadedInstrument = instrument.getOrThrow();
-    final loadedCandles = candles.getOrThrow();
     final quote = quotes.getOrThrow().single;
+    final (loadedCandles, previousSession) = await _chartCandles(
+      repo,
+      range,
+      interval,
+      quote.lastTradeTime,
+      candles.getOrThrow(),
+    );
     final loaded = StockDetailState(
       instrument: loadedInstrument,
       quote: quote,
       range: range,
       interval: interval,
+      chartType: chartType,
       candles: loadedCandles,
+      previousSession: previousSession,
     );
     if (!ref.mounted) return loaded;
     ref.read(analyticsProvider).log(Events.chartOpened);
@@ -100,7 +113,11 @@ class StockDetailController extends AsyncNotifier<StockDetailState> {
 
   Future<void> retry() async {
     ref.invalidateSelf();
-    await future;
+    try {
+      await future;
+    } on AppError {
+      return;
+    }
   }
 
   Future<void> _loadChart(ChartRange range, CandleInterval interval) async {
@@ -111,21 +128,67 @@ class StockDetailController extends AsyncNotifier<StockDetailState> {
     state = AsyncData(
       state.requireValue.copyWith(loadingCandles: true, candlesFailed: false),
     );
-    final result = await ref
-        .read(marketRepositoryProvider)
-        .getCandles(symbol, interval, from: range.from(DateTime.now().toUtc()));
+    final repo = ref.read(marketRepositoryProvider);
+    final current = state.requireValue;
+    final initial = await repo.getCandles(
+      symbol,
+      interval,
+      from: range.from(DateTime.now().toUtc()),
+    );
+    final List<Candle> candles;
+    final bool previousSession;
+    switch (initial) {
+      case Success(:final value):
+        (candles, previousSession) = await _chartCandles(
+          repo,
+          range,
+          interval,
+          current.quote.lastTradeTime,
+          value,
+        );
+      case Failure():
+        if (ref.mounted && request == _chartRequest) {
+          state = AsyncData(
+            state.requireValue.copyWith(
+              loadingCandles: false,
+              candlesFailed: true,
+            ),
+          );
+        }
+        return;
+    }
     // The user may have picked something else meanwhile, or left the screen.
     if (!ref.mounted || request != _chartRequest) return;
     final latest = state.requireValue;
-    state = AsyncData(switch (result) {
-      Success(:final value) => latest.copyWith(
+    state = AsyncData(
+      latest.copyWith(
         range: range,
         interval: interval,
-        candles: value,
+        candles: candles,
+        previousSession: previousSession,
         loadingCandles: false,
+        candlesFailed: false,
       ),
-      Failure() => latest.copyWith(loadingCandles: false, candlesFailed: true),
-    });
+    );
+  }
+
+  Future<(List<Candle>, bool)> _chartCandles(
+    MarketRepository repo,
+    ChartRange range,
+    CandleInterval interval,
+    DateTime lastTradeTime,
+    List<Candle> candles,
+  ) async {
+    if (range != ChartRange.d1 || candles.isNotEmpty) return (candles, false);
+    final result = await repo.getCandles(
+      symbol,
+      interval,
+      from: CandleInterval.d1.bucketOf(lastTradeTime),
+    );
+    return switch (result) {
+      Success(:final value) => (value, value.isNotEmpty),
+      Failure() => (const <Candle>[], false),
+    };
   }
 
   void _onQuote(List<Quote> batch) {

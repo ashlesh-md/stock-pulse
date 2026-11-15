@@ -12,9 +12,9 @@ import 'package:stock_pulse/app/snapshot/app_snapshot_file.dart';
 import 'package:stock_pulse/core/market_time/domain/clock.dart';
 import 'package:stock_pulse/core/observability/data/debug_crash_reporter.dart';
 import 'package:stock_pulse/core/observability/data/paint_probe.dart';
-import 'package:stock_pulse/core/observability/data/perf_marks.dart';
 import 'package:stock_pulse/core/observability/di/observability_providers.dart';
 import 'package:stock_pulse/core/observability/domain/crash_reporter.dart';
+import 'package:stock_pulse/core/observability/perf_marks.dart';
 import 'package:stock_pulse/core/storage/data/atomic_json_file.dart';
 import 'package:stock_pulse/core/storage/data/file_local_prefs.dart';
 import 'package:stock_pulse/core/storage/data/file_snapshot_store.dart';
@@ -48,7 +48,7 @@ void bootstrap({List<Override> overrides = const []}) {
       snapshot: snapshot,
       overrides: [
         snapshotStoreProvider.overrideWithValue(
-          FileSnapshotStore(snapshotFile),
+          FileSnapshotStore(snapshotFile, reporter: reporter),
         ),
         localPrefsProvider.overrideWith((ref) => prefs.load()),
         ...overrides,

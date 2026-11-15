@@ -69,7 +69,10 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
     );
     final strings = context.strings.portfolio;
     return Scaffold(
-      appBar: SpTabAppBar(title: Text(strings.title)),
+      appBar: SpTabAppBar(
+        title: Text(strings.title),
+        spacious: SpTabAppBar.forLargeText(context),
+      ),
       body: Column(
         children: [
           Padding(
@@ -89,27 +92,12 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
           ),
           Expanded(
             child: switch ((hasValue, error)) {
-              (true, _) => AnimatedSwitcher(
-                duration: const Duration(milliseconds: 180),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.easeInCubic,
-                transitionBuilder: (child, animation) => FadeTransition(
-                  opacity: animation,
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0, .025),
-                      end: Offset.zero,
-                    ).animate(animation),
-                    child: child,
-                  ),
-                ),
-                child: RefreshIndicator(
-                  key: ValueKey(_section),
-                  onRefresh: _refresh,
-                  child: PortfolioList(
-                    section: _section,
-                    refreshEnabled: !offline,
-                  ),
+              (true, _) => RefreshIndicator(
+                key: ValueKey(_section),
+                onRefresh: _refresh,
+                child: PortfolioList(
+                  section: _section,
+                  refreshEnabled: !offline,
                 ),
               ),
               (false, final Object error) => ErrorView(

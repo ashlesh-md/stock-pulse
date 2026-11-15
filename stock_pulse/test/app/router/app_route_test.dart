@@ -75,6 +75,14 @@ void main() {
       const StockRoute('RELIANCE'),
       const StrategyRoute(),
       ticket,
+      const OrderTicketRoute(
+        OrderTicketArgs(
+          instrumentId: 'NIFTY CE',
+          side: OrderSide.buy,
+          quantity: 75,
+          source: OrderSource.position,
+        ),
+      ),
     ]) {
       expect(AppRoute.fromUri(Uri.parse(route.location)), route);
     }

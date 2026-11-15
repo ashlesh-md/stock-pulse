@@ -36,6 +36,7 @@ class _ChainListState extends ConsumerState<ChainList> {
   ScrollController? _scroll;
   bool _atmVisible = true;
   double _viewport = 0;
+  double _rowExtent = SpDensity.chainRow;
   late int _currentAtm;
 
   @override
@@ -47,12 +48,12 @@ class _ChainListState extends ConsumerState<ChainList> {
   int get _atmIndex => widget.strikes.indexOf(_currentAtm);
 
   bool _isAtmVisible(double top, double viewport) {
-    final atmTop = _atmIndex * SpDensity.chainRow;
-    return atmTop + SpDensity.chainRow > top && atmTop < top + viewport;
+    final atmTop = _atmIndex * _rowExtent;
+    return atmTop + _rowExtent > top && atmTop < top + viewport;
   }
 
   double _offsetFor(int index, double viewport) =>
-      (index * SpDensity.chainRow - viewport * .55 + SpDensity.chainRow / 2)
+      (index * _rowExtent - viewport * .55 + _rowExtent / 2)
           .clamp(0, double.infinity)
           .toDouble();
 
@@ -73,8 +74,8 @@ class _ChainListState extends ConsumerState<ChainList> {
 
   void _narrowFeed(double top, double bottom) {
     final strikes = widget.strikes;
-    final first = (top / SpDensity.chainRow).floor() - ChainList.buffer;
-    final last = (bottom / SpDensity.chainRow).ceil() + ChainList.buffer;
+    final first = (top / _rowExtent).floor() - ChainList.buffer;
+    final last = (bottom / _rowExtent).ceil() + ChainList.buffer;
     ref
         .read(chainControllerProvider(widget.target).notifier)
         .setVisibleRange(
@@ -108,6 +109,9 @@ class _ChainListState extends ConsumerState<ChainList> {
     return LayoutBuilder(
       builder: (context, constraints) {
         _viewport = constraints.maxHeight;
+        _rowExtent = MediaQuery.textScalerOf(context).scale(1) > 1.3
+            ? SpDensity.chainRow * 2
+            : SpDensity.chainRow;
         final scroll = _scroll ??= ScrollController(
           initialScrollOffset: _offsetFor(_atmIndex, _viewport),
         );
@@ -117,13 +121,14 @@ class _ChainListState extends ConsumerState<ChainList> {
               onNotification: _onScroll,
               child: ListView.builder(
                 controller: scroll,
-                itemExtent: SpDensity.chainRow,
+                itemExtent: _rowExtent,
                 itemCount: widget.strikes.length,
                 itemBuilder: (context, index) => ChainRowTile(
                   key: ValueKey(widget.strikes[index]),
                   target: widget.target,
                   strike: widget.strikes[index],
                   columns: widget.columns,
+                  rowExtent: _rowExtent,
                 ),
               ),
             ),

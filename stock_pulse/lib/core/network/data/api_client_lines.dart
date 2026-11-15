@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer' as developer;
 
 import 'package:http/http.dart' as http;
 import 'package:stock_pulse/core/error/app_error.dart';
 import 'package:stock_pulse/core/network/data/api_client.dart';
 import 'package:stock_pulse/core/network/domain/endpoint.dart';
+
+bool _loggedMalformedAiLine = false;
 
 extension ApiClientLines on ApiClient {
   /// Cancelling aborts the HTTP request, including a silent connection.
@@ -12,6 +15,7 @@ extension ApiClientLines on ApiClient {
     final abort = Completer<void>();
     StreamSubscription<String>? subscription;
     var cancelled = false;
+    var malformedLineCount = 0;
     final output = StreamController<Map<String, Object?>>();
     void abortRequest() {
       cancelled = true;
@@ -57,10 +61,24 @@ extension ApiClientLines on ApiClient {
                   }
                   output.add(json);
                 } on FormatException {
-                  output.addError(const ParseError());
-                  abortRequest();
-                  unawaited(subscription?.cancel());
-                  unawaited(output.close());
+                  if (!_loggedMalformedAiLine) {
+                    _loggedMalformedAiLine = true;
+                    developer.log(
+                      'Malformed AI stream line replaced with a text fallback',
+                      name: 'stock_pulse.ai',
+                    );
+                  }
+                  output.add({
+                    'e': 'card',
+                    'card': {
+                      'id': 'malformed.${malformedLineCount++}',
+                      'v': 1,
+                      'type': 'text',
+                      'title': 'Answer detail unavailable',
+                      'fallbackText':
+                          'Part of this answer could not be displayed.',
+                    },
+                  });
                 }
               },
               onError: (Object error) {

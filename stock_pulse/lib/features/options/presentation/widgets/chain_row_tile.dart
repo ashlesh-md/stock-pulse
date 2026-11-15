@@ -19,6 +19,7 @@ class ChainRowTile extends StatelessWidget {
     super.key,
     required this.target,
     required this.strike,
+    this.rowExtent = SpDensity.chainRow,
     this.columns = const {
       ChainColumn.oi,
       ChainColumn.oiChange,
@@ -29,10 +30,11 @@ class ChainRowTile extends StatelessWidget {
   final ChainTarget target;
   final int strike;
   final Set<ChainColumn> columns;
+  final double rowExtent;
 
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: SpDensity.chainRow,
+    height: rowExtent,
     child: Row(
       children: [
         Expanded(
@@ -149,18 +151,28 @@ class _StrikeCell extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              Fmt.integer(strike),
-              style: context.spText.price.copyWith(
-                color: sp.textPrimary,
-                fontWeight: atm ? FontWeight.w700 : FontWeight.w500,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                Fmt.integer(strike),
+                maxLines: 1,
+                softWrap: false,
+                style: context.spText.price.copyWith(
+                  color: sp.textPrimary,
+                  fontWeight: atm ? FontWeight.w700 : FontWeight.w500,
+                ),
               ),
             ),
             if (atm)
-              Text(
-                context.strings.options.atm,
-                style: Theme.of(context).textTheme.labelSmall
-                    ?.copyWith(color: sp.accent),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  context.strings.options.atm,
+                  maxLines: 1,
+                  softWrap: false,
+                  style: Theme.of(context).textTheme.labelSmall
+                      ?.copyWith(color: sp.accent),
+                ),
               ),
           ],
         ),

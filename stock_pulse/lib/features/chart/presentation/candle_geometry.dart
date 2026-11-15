@@ -88,6 +88,25 @@ abstract final class CandleGeometry {
     return (lo - pad, hi + pad);
   }
 
+  /// Maps a price into the plot. Log mode uses natural log so equal percentage
+  /// moves have equal pixel distances; invalid/non-positive bounds fall back
+  /// to linear scaling rather than producing NaN coordinates.
+  static double priceY(
+    double price,
+    double low,
+    double high,
+    double height, {
+    bool logarithmic = false,
+  }) {
+    final log = logarithmic && low > 0 && high > low && price > 0;
+    final value = log ? logValue(price) : price;
+    final min = log ? logValue(low) : low;
+    final max = log ? logValue(high) : high;
+    return (max - value) / (max - min) * height;
+  }
+
+  static double logValue(double value) => log(value);
+
   /// Time-axis text: clock times within a day, dates beyond, months
   /// beyond 400 days.
   static String axisLabel(DateTime t, Duration span, CandleInterval interval) {

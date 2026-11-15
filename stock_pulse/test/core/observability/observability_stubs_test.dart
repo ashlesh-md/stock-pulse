@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stock_pulse/core/observability/data/paint_probe.dart';
-import 'package:stock_pulse/core/observability/data/perf_marks.dart';
 import 'package:stock_pulse/core/observability/di/observability_providers.dart';
+import 'package:stock_pulse/core/observability/perf_marks.dart';
 
 import '../../helpers/fake_crash_reporter.dart';
 

@@ -34,6 +34,8 @@ abstract interface class MarketStrings {
   String get chartLine;
   String get chartArea;
   String get chartLoadFailed;
+  String get chartNoCandles;
+  String get chartPreviousSession;
 
   String crosshairClose(String close);
   String crosshairOhlc(String open, String high, String low, String close);

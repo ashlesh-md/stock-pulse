@@ -1,3 +1,5 @@
+import 'dart:ui' show DisplayFeature, DisplayFeatureState, DisplayFeatureType;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stock_pulse/app/layout/adaptive_two_pane.dart';
@@ -69,6 +71,78 @@ void main() {
     await tester.pump();
     expect(find.text('1'), findsOneWidget);
     expect(find.text('Pick one'), findsOneWidget);
+  });
+
+  testWidgets('vertical hinge splits content without crossing the hinge', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: MediaQuery(
+          data: MediaQueryData(
+            size: Size(1400, 800),
+            displayFeatures: [
+              DisplayFeature(
+                bounds: Rect.fromLTWH(690, 0, 20, 800),
+                type: DisplayFeatureType.hinge,
+                state: DisplayFeatureState.postureFlat,
+              ),
+            ],
+          ),
+          child: AdaptiveTwoPane(
+            primary: ColoredBox(key: Key('left-pane'), color: Colors.red),
+            secondary: ColoredBox(key: Key('right-pane'), color: Colors.blue),
+            placeholder: SizedBox.shrink(),
+          ),
+        ),
+      ),
+    );
+
+    final left = tester.getRect(find.byKey(const Key('left-pane')));
+    final right = tester.getRect(find.byKey(const Key('right-pane')));
+    expect(left.right, lessThanOrEqualTo(690));
+    expect(right.left, greaterThanOrEqualTo(710));
+  });
+
+  testWidgets('half-open horizontal fold places panes above and below hinge', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1000, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: MediaQuery(
+          data: MediaQueryData(
+            size: Size(1000, 1400),
+            displayFeatures: [
+              DisplayFeature(
+                bounds: Rect.fromLTWH(0, 690, 1000, 20),
+                type: DisplayFeatureType.fold,
+                state: DisplayFeatureState.postureHalfOpened,
+              ),
+            ],
+          ),
+          child: AdaptiveTwoPane(
+            primary: ColoredBox(key: Key('top-pane'), color: Colors.red),
+            secondary: ColoredBox(key: Key('bottom-pane'), color: Colors.blue),
+            placeholder: SizedBox.shrink(),
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      tester.getRect(find.byKey(const Key('top-pane'))).bottom,
+      lessThanOrEqualTo(690),
+    );
+    expect(
+      tester.getRect(find.byKey(const Key('bottom-pane'))).top,
+      greaterThanOrEqualTo(710),
+    );
   });
 }
 

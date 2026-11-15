@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stock_pulse/features/market/presentation/widgets/candle_geometry.dart';
+import 'package:stock_pulse/features/chart/presentation/candle_geometry.dart';
 
 void main() {
   test('zoom preserves the candle under the focal point', () {

@@ -34,6 +34,9 @@ class LiveOrderRepository implements OrderRepository {
         .call(placeOrderEndpoint(req.toJson(), idempotencyKey: idempotencyKey))
         .timeout(timeout, onTimeout: () => const Failure(NetworkError()));
     return switch (result) {
+      Failure(error: ServerError(statusCode: 409)) => await _original(
+        idempotencyKey,
+      ),
       Failure(
         error: ServerError(:final statusCode, :final code, :final message),
       )
@@ -47,6 +50,13 @@ class LiveOrderRepository implements OrderRepository {
     };
   }
 
+  /// A 409 means the key was already used: that order is the answer.
+  Future<PlaceOutcome> _original(String idempotencyKey) async =>
+      switch (await getOrder(clientKey: idempotencyKey)) {
+        Success(value: final Order order) => PlaceAcked(order),
+        _ => const PlaceTimedOut(),
+      };
+
   @override
   Future<Result<Order?>> getOrder({String? id, String? clientKey}) async {
     if (id == null) {
@@ -54,8 +64,12 @@ class LiveOrderRepository implements OrderRepository {
       final result = await _api.call(orderByKeyEndpoint(clientKey));
       return switch (result) {
         Failure(:final error) => Failure(error),
-        Success(:final value) =>
-          (value! as Map)['data'] == null ? const Success(null) : _order(value),
+        Success(:final value) => parseJson(() {
+          final data = (value! as Map)['data'];
+          return data == null
+              ? null
+              : Order.fromJson(data as Map<String, Object?>);
+        }),
       };
     }
     final result = await _api.call(orderEndpoint(id));

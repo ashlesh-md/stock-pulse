@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/scheduler.dart';
 
-import 'package:stock_pulse/core/observability/data/perf_marks.dart';
+import 'package:stock_pulse/core/observability/perf_marks.dart';
 
 /// Paint-latency probe for one instrument. The probed tile or cell
 /// calls `PaintProbe.mark(quote.seq)` in build when its seq changes. The id

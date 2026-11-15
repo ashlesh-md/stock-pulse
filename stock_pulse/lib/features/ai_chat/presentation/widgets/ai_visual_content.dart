@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:option_math/option_math.dart';
 import 'package:stock_pulse/core/format/formatters.dart';
 import 'package:stock_pulse/features/ai_chat/domain/ai_card.dart';
+import 'package:stock_pulse/features/chart/presentation/candle_chart.dart';
 import 'package:stock_pulse/features/market/domain/candle.dart';
-import 'package:stock_pulse/features/market/presentation/widgets/candle_chart.dart';
 import 'package:stock_pulse/features/strategy/application/payoff_geometry.dart';
 import 'package:stock_pulse/features/strategy/presentation/widgets/payoff_chart.dart';
 

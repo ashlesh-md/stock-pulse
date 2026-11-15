@@ -3,9 +3,9 @@ import 'package:stock_pulse/core/theme/sp_theme_x.dart';
 import 'package:stock_pulse/features/chart/domain/indicators/study_kind.dart';
 import 'package:stock_pulse/features/chart/domain/indicators/study_series.dart';
 import 'package:stock_pulse/features/chart/domain/indicators/study_spec.dart';
+import 'package:stock_pulse/features/chart/presentation/candle_geometry.dart';
 import 'package:stock_pulse/features/chart/presentation/studies/study_painter.dart';
 import 'package:stock_pulse/features/market/domain/candle.dart';
-import 'package:stock_pulse/features/market/presentation/widgets/candle_geometry.dart';
 
 class StudyOverlayLayer extends StatelessWidget {
   const StudyOverlayLayer({

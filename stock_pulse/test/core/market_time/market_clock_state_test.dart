@@ -55,7 +55,10 @@ void main() {
     expect(clock.now(), DateTime.utc(2026, 1, 1, 0, 0, 2));
     clock.set(DateTime.utc(2027));
     expect(clock.now(), DateTime.utc(2027));
-    expect(const SystemClock().now().isUtc, isFalse);
+    // A runtime instance: a const one never runs the constructor.
+    // ignore: prefer_const_constructors
+    final system = SystemClock();
+    expect(system.now().isUtc, isFalse);
   });
 
   test(
@@ -64,6 +67,7 @@ void main() {
       final api = ApiClient(
         const AppConfig(host: 'localhost'),
         client: MockClient((_) async => http.Response('', 503)),
+        wait: (_) async {},
       );
       final container = ProviderContainer(
         overrides: [apiClientProvider.overrideWithValue(api)],

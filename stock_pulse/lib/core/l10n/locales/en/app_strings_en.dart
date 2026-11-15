@@ -7,6 +7,7 @@ import 'package:stock_pulse/core/l10n/locales/en/order_strings_en.dart';
 import 'package:stock_pulse/core/l10n/locales/en/portfolio_strings_en.dart';
 import 'package:stock_pulse/core/l10n/locales/en/shell_strings_en.dart';
 import 'package:stock_pulse/core/l10n/strings/alerts_strings.dart';
+import 'package:stock_pulse/core/l10n/strings/chart_strings.dart';
 import 'package:stock_pulse/core/l10n/strings/chat_strings.dart';
 import 'package:stock_pulse/core/l10n/strings/common_strings.dart';
 import 'package:stock_pulse/core/l10n/strings/error_strings.dart';
@@ -21,6 +22,8 @@ import 'package:stock_pulse/core/l10n/strings/studies_strings.dart';
 
 final class AppStringsEn implements AppStrings {
   const AppStringsEn();
+  @override
+  ChartStrings get chart => const ChartStrings();
   @override
   OptionsStrings get options => const OptionsStrings();
   @override

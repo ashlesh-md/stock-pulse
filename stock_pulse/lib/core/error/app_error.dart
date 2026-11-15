@@ -16,12 +16,23 @@ final class NetworkError extends AppError {
 
 /// The server answered with an error body: `{"error": {"code", "message"}}`.
 final class ServerError extends AppError {
-  const ServerError(this.statusCode, this.code, super.message);
+  const ServerError(
+    this.statusCode,
+    this.code,
+    super.message, {
+    this.retryAfter,
+  });
   final int statusCode;
   final String code;
+  final Duration? retryAfter;
 }
 
 /// The response was not the JSON we expected.
 final class ParseError extends AppError {
   const ParseError([super.message = 'Unexpected response from the server']);
+}
+
+/// A local read or write failed. The cached value remains usable where possible.
+final class StorageError extends AppError {
+  const StorageError([super.message = 'Local storage is unavailable']);
 }

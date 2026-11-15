@@ -73,6 +73,10 @@ final class MarketStringsEn implements MarketStrings {
   String get chartArea => 'Area';
   @override
   String get chartLoadFailed => 'Could not load this chart. Pick it again.';
+  @override
+  String get chartNoCandles => 'No price data is available for this session.';
+  @override
+  String get chartPreviousSession => 'Previous session';
 
   @override
   String crosshairClose(String close) => 'Close $close';

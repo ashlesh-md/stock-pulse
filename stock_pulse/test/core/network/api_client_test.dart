@@ -17,11 +17,13 @@ void main() {
   ApiClient clientWith(
     Future<http.Response> Function(http.Request req) handler, {
     Duration timeout = const Duration(seconds: 10),
+    Future<void> Function(Duration delay)? wait,
   }) {
     seen = [];
     return ApiClient(
       const AppConfig(host: '127.0.0.1'),
       timeout: timeout,
+      wait: wait,
       client: MockClient((req) {
         seen.add(req);
         return handler(req);
@@ -108,6 +110,56 @@ void main() {
       (result as Failure).error,
       isA<ServerError>().having((e) => e.code, 'code', 'http_500'),
     );
+  });
+
+  test('GET retries a 503 once after one second', () async {
+    final waits = <Duration>[];
+    final api = clientWith(
+      (_) async => seen.length == 1
+          ? http.Response('', 503)
+          : http.Response('{"data":true}', 200),
+      wait: (delay) async => waits.add(delay),
+    );
+
+    final result = await api.call(const Endpoint.get('/read'));
+
+    expect(result.valueOrNull, {'data': true});
+    expect(seen, hasLength(2));
+    expect(waits, [const Duration(seconds: 1)]);
+  });
+
+  test('GET retries 429 once using Retry-After', () async {
+    final waits = <Duration>[];
+    var calls = 0;
+    final api = clientWith(
+      (_) async => ++calls == 1
+          ? http.Response('', 429, headers: {'Retry-After': '3'})
+          : http.Response('{}', 200),
+      wait: (delay) async => waits.add(delay),
+    );
+
+    await api.call(const Endpoint.get('/read'));
+
+    expect(calls, 2);
+    expect(waits, [const Duration(seconds: 3)]);
+  });
+
+  test('401 and every POST are never automatically retried', () async {
+    final waits = <Duration>[];
+    final unauthorized = clientWith(
+      (_) async => http.Response('', 401),
+      wait: (delay) async => waits.add(delay),
+    );
+    final rejectedWrite = clientWith(
+      (_) async => http.Response('', 503),
+      wait: (delay) async => waits.add(delay),
+    );
+
+    await unauthorized.call(const Endpoint.get('/read'));
+    await rejectedWrite.call(const Endpoint.post('/write'));
+
+    expect(seen.map((request) => request.method), ['GET', 'POST']);
+    expect(waits, isEmpty);
   });
 
   test('a body that is not JSON is a ParseError', () async {

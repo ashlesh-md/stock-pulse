@@ -179,7 +179,7 @@ void main() {
   });
 
   test(
-    'a stopped answer offers no retry; a failed one retries in place',
+    'a stopped answer offers retry; a failed one retries in place',
     () async {
       await container.read(chatControllerProvider.future);
       controller().ask('NIFTY');
@@ -187,7 +187,8 @@ void main() {
       final id = state().answers.single.id;
       expect(state().answers.single.status, AnswerStatus.stopped);
       controller().retry(id);
-      expect(repo.streams, hasLength(1));
+      expect(repo.streams, hasLength(2));
+      expect(state().answers.single.status, AnswerStatus.sending);
 
       controller().retry('missing');
       controller().ask('Again');
@@ -197,7 +198,7 @@ void main() {
       expect(failed.status, AnswerStatus.failed, reason: 'closed without done');
 
       controller().retry(failed.id);
-      expect(repo.streams, hasLength(3));
+      expect(repo.streams, hasLength(4));
       expect(state().answers.last.id, failed.id);
       expect(state().answers.last.status, AnswerStatus.sending);
     },

@@ -2,24 +2,12 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/services.dart';
-import 'package:stock_pulse/core/l10n/l10n_context.dart';
-import 'package:stock_pulse/core/theme/sp_theme_x.dart';
+import 'package:stock_pulse/features/chart/presentation/candle_geometry.dart';
+import 'package:stock_pulse/features/chart/presentation/chart_canvas.dart';
 import 'package:stock_pulse/features/market/domain/candle.dart';
-import 'package:stock_pulse/features/market/presentation/widgets/candle_geometry.dart';
-import 'package:stock_pulse/features/market/presentation/widgets/candle_painter.dart';
 
-/// Price chart with volume bars, drawn with a [CustomPainter].
-///
-/// - [type]: candles, Heikin-Ashi, OHLC bars, line or area.
-/// - A new range starts "fitted": every candle fits the width, like the
-///   1D … 5Y views in broker apps. Pinch / scroll-wheel to zoom in, drag to
-///   pan back in time, double-tap to fit again, long-press for a crosshair.
-/// - [baseline] (1D: yesterday's close) is drawn as a dotted line, and line
-///   and area charts are green or red depending on which side of it the
-///   price is.
-///
-/// Give it a new `key` when the range or interval changes so zoom and pan
-/// reset. Wrapped in a [RepaintBoundary]: ticks repaint only the chart layer.
+/// Interactive OHLCV chart with pan, zoom, crosshair and baseline support.
+/// Use a new key when range or interval changes to reset its viewport.
 class CandleChart extends StatefulWidget {
   const CandleChart({
     super.key,
@@ -28,8 +16,14 @@ class CandleChart extends StatefulWidget {
     this.type = ChartType.candles,
     this.baseline,
     this.overlayBuilder,
+    this.interactionOverlayBuilder,
+    this.onCrosshairChanged,
+    this.crosshairIndex,
+    this.onPainterPainted,
     this.interactive = true,
     this.showVolume = true,
+    this.logScale = false,
+    this.gridlines = true,
   });
 
   final List<Candle> candles;
@@ -37,11 +31,19 @@ class CandleChart extends StatefulWidget {
   final ChartType type;
   final double? baseline;
   final Widget Function(double candleWidth, int offset)? overlayBuilder;
+  final Widget Function(double candleWidth, int offset)?
+  interactionOverlayBuilder;
+  final ValueChanged<int?>? onCrosshairChanged;
+  final int? crosshairIndex;
+  @visibleForTesting
+  final ValueChanged<String>? onPainterPainted;
 
   /// false: a static picture with no zoom, pan, crosshair or focus (the
   /// mini chart inside an AI card).
   final bool interactive;
   final bool showVolume;
+  final bool logScale;
+  final bool gridlines;
 
   @override
   State<CandleChart> createState() => _CandleChartState();
@@ -49,13 +51,12 @@ class CandleChart extends StatefulWidget {
 
 class _CandleChartState extends State<CandleChart>
     with SingleTickerProviderStateMixin {
-  /// null = fit every candle to the width. Set once the user zooms.
   double? _zoomedWidth;
   double _scaleStartWidth = 8;
 
   /// How many candles we are scrolled back from the newest one.
   double _offset = 0;
-  int? _crosshair;
+  late int? _crosshair = widget.crosshairIndex;
   late final AnimationController _momentum = AnimationController.unbounded(
     vsync: this,
   );
@@ -207,7 +208,10 @@ class _CandleChartState extends State<CandleChart>
                     _updateCrosshair(d.localPosition.dx, plotWidth, width),
                 onLongPressMoveUpdate: (d) =>
                     _updateCrosshair(d.localPosition.dx, plotWidth, width),
-                onLongPressEnd: (_) => setState(() => _crosshair = null),
+                onLongPressEnd: (_) {
+                  setState(() => _crosshair = null);
+                  widget.onCrosshairChanged?.call(null);
+                },
                 child: painted,
               ),
             ),
@@ -222,36 +226,22 @@ class _CandleChartState extends State<CandleChart>
     BoxConstraints constraints,
     List<Candle> drawn,
     double width,
-  ) {
-    final theme = Theme.of(context);
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        CustomPaint(
-          size: Size(constraints.maxWidth, constraints.maxHeight),
-          painter: CandlePainter(
-            candles: drawn,
-            type: widget.type,
-            interval: widget.interval,
-            baseline: widget.baseline,
-            candleWidth: width,
-            offset: _offset.round(),
-            crosshair: _crosshair,
-            gridColor: theme.dividerColor.withValues(alpha: 0.4),
-            textStyle: theme.textTheme.labelSmall!.copyWith(
-              color: theme.hintColor,
-            ),
-            labelBackground: theme.colorScheme.surfaceContainerHighest,
-            colors: context.sp,
-            strings: context.strings.market,
-            showVolume: widget.showVolume,
-          ),
-        ),
-        if (widget.overlayBuilder != null)
-          IgnorePointer(child: widget.overlayBuilder!(width, _offset.round())),
-      ],
-    );
-  }
+  ) => ChartCanvas(
+    candles: drawn,
+    interval: widget.interval,
+    type: widget.type,
+    candleWidth: width,
+    offset: _offset.round(),
+    crosshair: _crosshair,
+    logScale: widget.logScale,
+    gridlines: widget.gridlines,
+    size: Size(constraints.maxWidth, constraints.maxHeight),
+    baseline: widget.baseline,
+    showVolume: widget.showVolume,
+    overlayBuilder: widget.overlayBuilder,
+    onPainterPainted: widget.onPainterPainted,
+    interactionOverlayBuilder: widget.interactionOverlayBuilder,
+  );
 
   void _updateCrosshair(double dx, double plotWidth, double width) {
     final index = CandleGeometry.indexAt(
@@ -261,6 +251,8 @@ class _CandleChartState extends State<CandleChart>
       width,
       _offset.round(),
     );
+    if (_crosshair == index) return;
     setState(() => _crosshair = index);
+    widget.onCrosshairChanged?.call(index);
   }
 }

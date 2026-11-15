@@ -9,20 +9,30 @@ class SpTabAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.title,
     this.actions = const [],
     this.bottom,
+    this.spacious = false,
   });
 
   final Widget title;
   final List<Widget> actions;
   final PreferredSizeWidget? bottom;
+  final bool spacious;
+
+  static bool forLargeText(BuildContext context) =>
+      MediaQuery.textScalerOf(context).scale(1) > 1.3;
+
+  double get _toolbarHeight => kToolbarHeight + (spacious ? 16 : 0);
 
   @override
   Size get preferredSize =>
-      Size.fromHeight(kToolbarHeight + (bottom?.preferredSize.height ?? 0));
+      Size.fromHeight(_toolbarHeight + (bottom?.preferredSize.height ?? 0));
 
   @override
   Widget build(BuildContext context) => AppBar(
+    toolbarHeight: _toolbarHeight,
     centerTitle: false,
     title: DefaultTextStyle.merge(
+      // Long translations would wrap and push the toolbar past its height.
+      maxLines: 1,
       overflow: TextOverflow.ellipsis,
       child: title,
     ),

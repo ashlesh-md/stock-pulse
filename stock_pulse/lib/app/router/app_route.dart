@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:stock_pulse/features/chart/domain/chart_selection.dart';
 import 'package:stock_pulse/features/orders/domain/order.dart'
     show OrderSide, ProductType;
 import 'package:stock_pulse/features/orders/domain/order_ticket_args.dart'
@@ -6,6 +7,7 @@ import 'package:stock_pulse/features/orders/domain/order_ticket_args.dart'
 import 'package:stock_pulse/features/portfolio/domain/portfolio_section.dart';
 
 part 'detail_routes.dart';
+part 'chart_routes.dart';
 
 /// Every screen the router can show. Screens never build paths: they pass a
 /// route to `context.goTo` / `context.pushTo`.
@@ -21,7 +23,7 @@ sealed class AppRoute {
   String get location;
 
   /// True for the five shell tabs, which are selected, never pushed.
-  bool get isTab => this is ShellRoute;
+  bool get isTab => this is ShellTabRoute;
 
   @override
   bool operator ==(Object other) =>
@@ -56,7 +58,14 @@ sealed class AppRoute {
           id,
           query,
         ),
-        ['stock', final id] when id.isNotEmpty => StockRoute(id),
+        ['stock', final id, 'chart'] when id.isNotEmpty => ChartRoute.fromQuery(
+          id,
+          query,
+        ),
+        ['stock', final id] when id.isNotEmpty => StockRoute.fromQuery(
+          id,
+          query,
+        ),
         _ => null,
       },
     };

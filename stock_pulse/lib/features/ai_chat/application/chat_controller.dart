@@ -69,8 +69,9 @@ class ChatController extends AsyncNotifier<ChatState> {
   void retry(String id) {
     final answer = state.value?.answer(id);
     if (answer == null ||
-        answer.status != AnswerStatus.failed ||
-        !answer.retryable) {
+        (answer.status != AnswerStatus.failed &&
+            answer.status != AnswerStatus.stopped) ||
+        (answer.status == AnswerStatus.failed && !answer.retryable)) {
       return;
     }
     _interrupt();

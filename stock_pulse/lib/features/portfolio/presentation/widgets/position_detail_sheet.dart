@@ -32,7 +32,11 @@ Future<void> showPositionDetails(
         OrderTicketArgs(
           instrumentId: position.symbol,
           side: exit && position.quantity > 0 ? OrderSide.sell : OrderSide.buy,
-          lots: exit ? (position.lots ?? position.quantity).abs() : null,
+          // Positions carry units; the ticket turns them into lots.
+          lots: exit ? position.lots?.abs() : null,
+          quantity: exit && position.lots == null
+              ? position.quantity.abs()
+              : null,
           product: position.product,
           source: OrderSource.position,
         ),

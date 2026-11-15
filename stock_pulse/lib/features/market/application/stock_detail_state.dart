@@ -16,6 +16,7 @@ class StockDetailState {
     this.chartType = ChartType.candles,
     this.loadingCandles = false,
     this.candlesFailed = false,
+    this.previousSession = false,
   });
 
   final Instrument instrument;
@@ -34,6 +35,8 @@ class StockDetailState {
 
   /// The last range or interval change failed; the old chart stays.
   final bool candlesFailed;
+
+  final bool previousSession;
 
   /// Price the range's performance is measured from. 1D compares with
   /// yesterday's close (like the change shown everywhere else); longer
@@ -60,6 +63,7 @@ class StockDetailState {
     List<Candle>? candles,
     bool? loadingCandles,
     bool? candlesFailed,
+    bool? previousSession,
   }) => StockDetailState(
     instrument: instrument ?? this.instrument,
     quote: quote ?? this.quote,
@@ -69,5 +73,6 @@ class StockDetailState {
     candles: candles ?? this.candles,
     loadingCandles: loadingCandles ?? this.loadingCandles,
     candlesFailed: candlesFailed ?? this.candlesFailed,
+    previousSession: previousSession ?? this.previousSession,
   );
 }

@@ -55,7 +55,7 @@ Server: `market_server/` (Dart). App: `stock_pulse/` (Flutter). Shared package: 
 
 ## Report to the dashboard (required)
 Every Bash call starts with:
-`export TEAM_DIR=docs/team; T=tools/agent-team/scripts/team.py`
+`export TEAM_DIR=./docs/team; T=tools/agent-team/scripts/team.py`
 - When you start a story: `python3 $T task <S-id> in_progress --owner <you>` and `python3 $T agent <you> working --activity "<S-id>: <what>"`. Update the activity at each step ("writing tests", "implementing X", "fixing analyze").
 - Post 1–3 real messages per story in `--thread build`: a decision you made, a deviation from the LLD, or something another developer must know (`--to` them).
 - When the story's tests pass and analyze is clean on your files: `python3 $T task <S-id> review --owner <you> --note "<n> tests pass; files: ..."`. Never mark `done` (the dev lead does that after checking).

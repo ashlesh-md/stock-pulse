@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:stock_pulse/core/assets/app_icons.dart';
+import 'package:stock_pulse/core/error/app_error.dart';
 import 'package:stock_pulse/core/l10n/l10n_context.dart';
 import 'package:stock_pulse/core/l10n/strings/error_strings.dart';
 import 'package:stock_pulse/core/widgets/empty_view.dart';
@@ -21,7 +22,10 @@ class ErrorView extends StatelessWidget {
       title: strings.errors.title,
       message: errorText(strings.errors, error),
       hint: kDebugMode ? strings.errors.serverHint : null,
-      actionLabel: strings.common.retry,
+      actionLabel: switch (error) {
+        ServerError(statusCode: 401) => strings.errors.restartDemo,
+        _ => strings.common.retry,
+      },
       onAction: onRetry,
     );
   }

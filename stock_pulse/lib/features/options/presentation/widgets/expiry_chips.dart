@@ -27,8 +27,9 @@ class ExpiryChips extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = context.strings.options;
     final sp = context.sp;
+    final scale = MediaQuery.textScalerOf(context).scale(1);
     return SizedBox(
-      height: SpDensity.tap + SpSpace.s2,
+      height: (SpDensity.tap + SpSpace.s2) * scale.clamp(1, 2),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: SpSpace.gutter),

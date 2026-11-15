@@ -1,8 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stock_pulse/core/error/app_error.dart';
 import 'package:stock_pulse/core/error/result.dart';
+import 'package:stock_pulse/core/l10n/app_strings.dart';
+import 'package:stock_pulse/core/l10n/strings/error_strings.dart';
 
 void main() {
+  test('storage diagnostics remain in logs and never become user text', () {
+    final details = StringBuffer('disk unavailable');
+    final error = StorageError(details.toString());
+    expect(error.toString(), details.toString());
+    final strings = appStringsFor(defaultLocale).errors;
+    expect(errorText(strings, error), strings.unknown);
+  });
   test('map transforms a value and passes an error through', () {
     expect(const Success(2).map((v) => v * 3).valueOrNull, 6);
     const error = NetworkError();
@@ -45,6 +54,10 @@ void main() {
 
   test('an error prints its log message', () {
     expect('${const ServerError(500, 'c', 'boom')}', 'boom');
+  });
+
+  test('storage errors use their safe default diagnostic', () {
+    expect(const StorageError().message, 'Local storage is unavailable');
   });
 }
 

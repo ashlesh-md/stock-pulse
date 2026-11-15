@@ -21,6 +21,7 @@ class FileLocalPrefs implements LocalPrefs {
   final AtomicJsonFile _file;
   final CrashReporter _reporter;
   LocalPrefsData _data = LocalPrefsData.defaults;
+  bool _writeFailureLogged = false;
 
   @override
   LocalPrefsData get data => _data;
@@ -97,19 +98,30 @@ class FileLocalPrefs implements LocalPrefs {
       );
     }
     _data = next;
-    return _file.write({
-      'schemaVersion': schemaVersion,
-      'favouriteIds': next.favouriteIds.toList(),
-      'watchlistOrder': next.watchlistOrder,
-      'pendingOrderRecords': next.pendingOrderRecords,
-      'riskNoticeAcked': next.riskNoticeAcked,
-      'hapticsEnabled': next.hapticsEnabled,
-      'analyticsConsent': next.analyticsConsent,
-      'notificationExplainerShown': next.notificationExplainerShown,
-      'seenAlertIds': next.seenAlertIds.toList(),
-      'lastChainUnderlying': next.lastChainUnderlying,
-      'localeOverride': next.localeOverride?.toLanguageTag(),
-    });
+    return _write(next);
+  }
+
+  /// A failed write keeps [data] in memory; the next update writes again.
+  Future<void> _write(LocalPrefsData next) async {
+    try {
+      await _file.write({
+        'schemaVersion': schemaVersion,
+        'favouriteIds': next.favouriteIds.toList(),
+        'watchlistOrder': next.watchlistOrder,
+        'pendingOrderRecords': next.pendingOrderRecords,
+        'riskNoticeAcked': next.riskNoticeAcked,
+        'hapticsEnabled': next.hapticsEnabled,
+        'analyticsConsent': next.analyticsConsent,
+        'notificationExplainerShown': next.notificationExplainerShown,
+        'seenAlertIds': next.seenAlertIds.toList(),
+        'lastChainUnderlying': next.lastChainUnderlying,
+        'localeOverride': next.localeOverride?.toLanguageTag(),
+      });
+    } on Object catch (e) {
+      if (_writeFailureLogged) return;
+      _writeFailureLogged = true;
+      _reporter.log('prefs_write_failed', {'error': e.runtimeType.toString()});
+    }
   }
 
   @override

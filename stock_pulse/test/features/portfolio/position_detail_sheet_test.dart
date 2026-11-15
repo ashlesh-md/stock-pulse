@@ -81,7 +81,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('ticket'), findsOneWidget);
       expect(opened!.side, quantity > 0 ? OrderSide.sell : OrderSide.buy);
-      expect(opened!.lots, quantity.abs());
+      expect(opened!.quantity, quantity.abs());
+      expect(opened!.lots, isNull);
       expect(opened!.source, OrderSource.position);
     });
   }
@@ -124,6 +125,26 @@ void main() {
     expect(opened?.lots, 2);
     expect(opened?.product, ProductType.mis);
     expect(opened?.source, OrderSource.position);
+  });
+
+  testWidgets('Exit without a server lot count sends units, never units as '
+      'lots', (tester) async {
+    await open(
+      tester,
+      const Position(
+        symbol: 'NIFTY26NOV24600CE',
+        quantity: -75,
+        product: ProductType.nrml,
+        averagePrice: 112,
+        realizedPnl: 0,
+      ),
+    );
+    await tester.tap(find.text('Exit'));
+    await tester.pumpAndSettle();
+
+    expect(opened?.side, OrderSide.buy);
+    expect(opened?.lots, isNull);
+    expect(opened?.quantity, 75);
   });
 
   testWidgets('a closed position cannot exit; no price shows a dash', (

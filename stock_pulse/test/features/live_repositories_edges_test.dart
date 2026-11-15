@@ -52,6 +52,7 @@ void main() {
     answer = (_) => {'data': <Object?>[]};
     api = ApiClient(
       const AppConfig(host: 'test'),
+      wait: (_) async {},
       client: MockClient(
         (r) async => http.Response(jsonEncode(answer(r)), status),
       ),
@@ -94,6 +95,22 @@ void main() {
       expiry: '2026-11-10',
       fromStrike: 90,
       toStrike: 110,
+    );
+
+    test(
+      'a failed initial chain read emits an error instead of an empty chain',
+      () async {
+        status = 503;
+        final errors = <Object>[];
+        final sub = LiveChainRepository(
+          api,
+          socket,
+        ).watchChain(req).views.listen(null, onError: errors.add);
+        await settle();
+        await settle();
+        expect(errors.single, isA<ServerError>());
+        await sub.cancel();
+      },
     );
 
     test('expiries are parsed from the REST list', () async {

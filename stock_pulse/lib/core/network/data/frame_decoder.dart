@@ -17,6 +17,26 @@ Map<String, Object?>? decodeFrame(String text) {
   }
 }
 
+/// Counts frames the socket had to drop and logs the first of each kind,
+/// so a server sending garbage is visible without flooding the log.
+class FrameDropCounter {
+  FrameDropCounter(this._log);
+
+  /// `CrashReporter.log`.
+  final void Function(String event, Map<String, Object?> data) _log;
+  final _logged = <String>{};
+  int _count = 0;
+
+  int get count => _count;
+
+  void drop(String reason) {
+    _count++;
+    if (_logged.add(reason)) {
+      _log('socket_frame_dropped', {'reason': reason});
+    }
+  }
+}
+
 /// Finds lost data frames: every data frame of one connection carries the
 /// next `seq`, so a jump means the client missed something.
 class SequenceGapDetector {

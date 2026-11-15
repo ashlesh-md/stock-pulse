@@ -30,36 +30,49 @@ class EmptyView extends StatelessWidget {
     final sp = context.sp;
     final text = Theme.of(context).textTheme;
     final label = actionLabel;
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 320),
-        child: Padding(
-          padding: const EdgeInsets.all(SpSpace.s6),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 48, color: sp.textTertiary),
-              const SizedBox(height: SpSpace.s3),
-              Text(title, textAlign: TextAlign.center, style: text.titleMedium),
-              const SizedBox(height: SpSpace.s1),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: text.bodyMedium?.copyWith(color: sp.textSecondary),
-              ),
-              if (hint case final h?) ...[
-                const SizedBox(height: SpSpace.s1),
-                Text(
-                  h,
-                  textAlign: TextAlign.center,
-                  style: text.bodySmall?.copyWith(color: sp.textTertiary),
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: constraints.hasBoundedHeight ? constraints.maxHeight : 0,
+          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 320),
+              child: Padding(
+                padding: const EdgeInsets.all(SpSpace.s6),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(icon, size: 48, color: sp.textTertiary),
+                    const SizedBox(height: SpSpace.s3),
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: text.titleMedium,
+                    ),
+                    const SizedBox(height: SpSpace.s1),
+                    Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      style: text.bodyMedium?.copyWith(color: sp.textSecondary),
+                    ),
+                    if (hint case final h?) ...[
+                      const SizedBox(height: SpSpace.s1),
+                      Text(
+                        h,
+                        textAlign: TextAlign.center,
+                        style: text.bodySmall?.copyWith(color: sp.textTertiary),
+                      ),
+                    ],
+                    if (label != null && onAction != null) ...[
+                      const SizedBox(height: SpSpace.s4),
+                      FilledButton(onPressed: onAction, child: Text(label)),
+                    ],
+                  ],
                 ),
-              ],
-              if (label != null && onAction != null) ...[
-                const SizedBox(height: SpSpace.s4),
-                FilledButton(onPressed: onAction, child: Text(label)),
-              ],
-            ],
+              ),
+            ),
           ),
         ),
       ),

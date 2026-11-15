@@ -64,7 +64,7 @@ class ChatAnswerView extends StatelessWidget {
           if (answer.status == AnswerStatus.failed)
             _FailedRow(answer: answer, onRetry: onRetry),
           if (answer.status == AnswerStatus.stopped)
-            _caption(context, context.strings.chat.stopped, TextAlign.start),
+            _StoppedRow(onRetry: onRetry),
         ],
       ),
     );
@@ -206,4 +206,32 @@ class _FailedRow extends StatelessWidget {
       ),
     );
   }
+}
+
+class _StoppedRow extends StatelessWidget {
+  const _StoppedRow({required this.onRetry});
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    liveRegion: true,
+    child: Padding(
+      padding: const EdgeInsets.only(top: SpSpace.s1),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            context.strings.chat.stopped,
+            style: context.spText.caption.copyWith(
+              color: context.sp.textTertiary,
+            ),
+          ),
+          TextButton(
+            onPressed: onRetry,
+            child: Text(context.strings.chat.retry),
+          ),
+        ],
+      ),
+    ),
+  );
 }

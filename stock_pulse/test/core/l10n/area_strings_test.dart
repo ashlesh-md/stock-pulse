@@ -1,8 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stock_pulse/core/l10n/strings/chat_strings.dart';
+import 'package:stock_pulse/core/l10n/strings/options_strings.dart';
 import 'package:stock_pulse/core/l10n/strings/studies_strings.dart';
 
 void main() {
+  test('option selection labels explain how to open a chain', () {
+    const s = OptionsStrings();
+    expect(s.sectionTitle, 'Options');
+    expect(s.chooseUnderlyingHint, contains('option chain'));
+    expect(s.chooseUnderlyingAction, s.chooseUnderlying);
+  });
   test('chat attachment sizes and labels cover KB and MB formatting', () {
     const strings = ChatStrings();
     expect(strings.size(1), '1 KB');

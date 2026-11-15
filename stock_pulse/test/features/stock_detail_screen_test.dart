@@ -14,13 +14,16 @@ import 'package:stock_pulse/core/network/domain/subscriptions.dart';
 import 'package:stock_pulse/core/observability/di/observability_providers.dart';
 import 'package:stock_pulse/core/storage/di/storage_providers.dart';
 import 'package:stock_pulse/core/theme/app_theme.dart';
+import 'package:stock_pulse/features/chart/di/chart_data_providers.dart';
+import 'package:stock_pulse/features/chart/di/chart_route_providers.dart';
+import 'package:stock_pulse/features/chart/domain/chart_selection.dart';
+import 'package:stock_pulse/features/chart/presentation/candle_chart.dart';
 import 'package:stock_pulse/features/market/di/market_data_providers.dart';
 import 'package:stock_pulse/features/market/domain/candle.dart';
 import 'package:stock_pulse/features/market/domain/instrument.dart';
 import 'package:stock_pulse/features/market/domain/market_repository.dart';
 import 'package:stock_pulse/features/market/domain/quote.dart';
 import 'package:stock_pulse/features/market/presentation/screens/stock_detail_screen.dart';
-import 'package:stock_pulse/features/market/presentation/widgets/candle_chart.dart';
 import 'package:stock_pulse/features/orders/di/order_preflight_provider.dart';
 import 'package:stock_pulse/features/orders/di/orders_data_providers.dart';
 import 'package:stock_pulse/features/orders/domain/order.dart';
@@ -126,8 +129,14 @@ void main() {
     ).thenAnswer((_) => live.stream);
   });
 
-  Widget app({String instrumentId = 'TCS'}) => ProviderScope(
+  Widget app({
+    String instrumentId = 'TCS',
+    ChartSelection? initialChartSelection,
+  }) => ProviderScope(
     overrides: [
+      if (initialChartSelection != null)
+        initialChartSelectionProvider(instrumentId)
+            .overrideWithValue(initialChartSelection),
       crashReporterProvider.overrideWithValue(FakeCrashReporter()),
       orderPreflightProvider.overrideWithValue(
         ({
@@ -141,6 +150,7 @@ void main() {
           triggerPrice,
         }) => null,
       ),
+      chartDirectoryProvider.overrideWithValue(null),
       marketRepositoryProvider.overrideWithValue(repo),
       portfolioRepositoryProvider.overrideWithValue(portfolio),
       orderRepositoryProvider.overrideWithValue(orders),
@@ -167,6 +177,27 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
   }
+
+  testWidgets('deep-link chart settings load their candles on first request', (
+    tester,
+  ) async {
+    tallScreen(tester);
+    await tester.pumpWidget(
+      app(
+        initialChartSelection: const ChartSelection(
+          range: ChartRange.w1,
+          interval: CandleInterval.m15,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    verify(
+      () =>
+          repo.getCandles('TCS', CandleInterval.m15, from: any(named: 'from')),
+    ).called(1);
+    expect(find.widgetWithText(TextButton, '1W'), findsOneWidget);
+  });
 
   testWidgets(
     'shows price, range performance, chart, depth; a live tick updates them',

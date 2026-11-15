@@ -68,11 +68,17 @@ class PnlCard extends ConsumerWidget {
                   ],
                 ),
               ),
-            if (funds != null)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(strings.fundsAvailable(Fmt.price(funds))),
+            // Reserve the funds line before funds load so the card does not
+            // grow under the user's finger.
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                funds == null ? '' : strings.fundsAvailable(Fmt.price(funds)),
+                style: const TextStyle(
+                  fontFeatures: [FontFeature.tabularFigures()],
+                ),
               ),
+            ),
           ],
         ),
       ),
@@ -90,6 +96,7 @@ class PnlCard extends ConsumerWidget {
           pnlText(value),
           style: theme.textTheme.titleLarge?.copyWith(
             color: context.sp.directionOf((value * 100).round()),
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
       ],

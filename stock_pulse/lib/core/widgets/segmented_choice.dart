@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:stock_pulse/core/theme/sp_theme_x.dart';
+import 'package:stock_pulse/core/theme/sp_tokens.dart';
 
 /// One segment of a [SegmentedChoice].
 class SpSegment<T> {
@@ -31,8 +33,17 @@ class SegmentedChoice<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final onChanged = this.onChanged;
+    final colors = context.sp;
     return SegmentedButton<T>(
       showSelectedIcon: false,
+      style: SegmentedButton.styleFrom(
+        backgroundColor: colors.surface2,
+        foregroundColor: colors.textSecondary,
+        selectedBackgroundColor: colors.accent,
+        selectedForegroundColor: colors.onAccent,
+        side: BorderSide(color: colors.outline),
+        minimumSize: const Size(0, SpDensity.tap),
+      ),
       segments: [
         for (final s in segments)
           ButtonSegment<T>(

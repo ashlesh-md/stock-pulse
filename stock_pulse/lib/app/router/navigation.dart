@@ -13,8 +13,9 @@ extension AppNavigation on BuildContext {
   void goTo(AppRoute route) => GoRouter.of(this).goTo(route);
 
   /// Pushes [route] above the current one; a tab route is selected instead.
-  /// A stock page on top is replaced, so two never stack. On an expanded
-  /// window a stock opened from the watchlist fills its detail pane instead.
+  /// A stock page on top is replaced, so two never stack. Where the
+  /// watchlist shows a detail pane (an expanded window, or an unfolded
+  /// foldable), a stock opened from it fills that pane instead.
   Future<T?> pushTo<T extends Object?>(AppRoute route) async {
     final router = GoRouter.of(this);
     if (route.isTab) {
@@ -23,7 +24,7 @@ extension AppNavigation on BuildContext {
     }
     if (route is StockRoute) {
       final name = router.state.name;
-      if (name == WatchlistRoute.name && windowClass.showsTwoPanes) {
+      if (name == WatchlistRoute.name && showsDetailPane) {
         ProviderScope.containerOf(
           this,
           listen: false,

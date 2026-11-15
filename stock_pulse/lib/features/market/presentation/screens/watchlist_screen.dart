@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stock_pulse/app/router/app_route.dart';
 import 'package:stock_pulse/app/router/navigation.dart';
+import 'package:stock_pulse/core/assets/app_icons.dart';
 import 'package:stock_pulse/core/l10n/l10n_context.dart';
 import 'package:stock_pulse/core/widgets/error_view.dart';
 import 'package:stock_pulse/core/widgets/sp_tab_app_bar.dart';
@@ -33,20 +34,41 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
     return Scaffold(
       appBar: SpTabAppBar(
         title: Text(context.strings.market.watchlistTitle),
+        spacious: SpTabAppBar.forLargeText(context),
         actions: [
           if (instruments.hasValue)
-            TextButton(
-              onPressed: () => setState(() => _editing = !_editing),
-              child: Text(
-                _editing
+            Semantics(
+              button: true,
+              label: _editing
+                  ? context.strings.common.done
+                  : context.strings.market.editWatchlist,
+              onTap: () => setState(() => _editing = !_editing),
+              child: Tooltip(
+                message: _editing
                     ? context.strings.common.done
                     : context.strings.market.editWatchlist,
+                child: SizedBox.square(
+                  dimension: 48,
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: InkWell(
+                      onTap: () => setState(() => _editing = !_editing),
+                      child: ExcludeSemantics(
+                        child: Icon(
+                          _editing ? AppIcons.success : AppIcons.edit,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
         ],
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(28),
-          child: MarketBreadth(),
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(
+            MediaQuery.textScalerOf(context).scale(1) > 1.3 ? 48 : 28,
+          ),
+          child: const MarketBreadth(),
         ),
       ),
       body: switch (instruments) {

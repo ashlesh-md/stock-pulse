@@ -32,20 +32,34 @@ void main() {
       ]);
     },
   );
-  test('bad JSON becomes ParseError', () async {
-    final client = ApiClient(
-      AppConfig.fromEnvironment(),
-      client: MockClient.streaming(
-        (req, body) async =>
-            http.StreamedResponse(Stream.value(utf8.encode('broken\n')), 200),
-      ),
-    );
-    addTearDown(client.close);
-    await expectLater(
-      client.postLines('/ask', {}).toList(),
-      throwsA(isA<ParseError>()),
-    );
-  });
+  test(
+    'malformed JSON gets a text fallback and following lines continue',
+    () async {
+      final client = ApiClient(
+        AppConfig.fromEnvironment(),
+        client: MockClient.streaming(
+          (req, body) async => http.StreamedResponse(
+            Stream.value(utf8.encode('broken\n{"e":"done","cards":1}\n')),
+            200,
+          ),
+        ),
+      );
+      addTearDown(client.close);
+      expect(await client.postLines('/ask', {}).toList(), [
+        {
+          'e': 'card',
+          'card': {
+            'id': 'malformed.0',
+            'v': 1,
+            'type': 'text',
+            'title': 'Answer detail unavailable',
+            'fallbackText': 'Part of this answer could not be displayed.',
+          },
+        },
+        {'e': 'done', 'cards': 1},
+      ]);
+    },
+  );
   test('HTTP failure becomes ServerError', () async {
     final client = ApiClient(
       AppConfig.fromEnvironment(),

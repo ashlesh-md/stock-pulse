@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:stock_pulse/app/di/layout_providers.dart';
+import 'package:stock_pulse/app/layout/navigation_rail_surface.dart';
 import 'package:stock_pulse/app/layout/window_class.dart';
 import 'package:stock_pulse/app/router/movable_tab_shortcut.dart';
 import 'package:stock_pulse/core/assets/app_icons.dart';
@@ -120,26 +121,31 @@ class _AppShellScaffoldState extends ConsumerState<AppShellScaffold> {
       );
     }
     final extended = window == WindowClass.expanded;
+    final hideLabels = MediaQuery.textScalerOf(context).scale(1) > 1.3;
     return Scaffold(
       body: Row(
         children: [
-          SafeArea(
-            right: false,
-            child: NavigationRail(
-              selectedIndex: widget.navigationShell.currentIndex,
-              onDestinationSelected: _select,
-              extended: extended,
-              minExtendedWidth: 200,
-              labelType: extended
-                  ? NavigationRailLabelType.none
-                  : NavigationRailLabelType.all,
-              destinations: [
-                for (final (icon, label) in destinations)
-                  NavigationRailDestination(
-                    icon: Icon(icon),
-                    label: Text(label),
-                  ),
-              ],
+          NavigationRailSurface(
+            child: SafeArea(
+              right: false,
+              child: NavigationRail(
+                selectedIndex: widget.navigationShell.currentIndex,
+                onDestinationSelected: _select,
+                extended: extended,
+                minExtendedWidth: 200,
+                labelType: extended
+                    ? NavigationRailLabelType.none
+                    : hideLabels
+                    ? NavigationRailLabelType.none
+                    : NavigationRailLabelType.all,
+                destinations: [
+                  for (final (icon, label) in destinations)
+                    NavigationRailDestination(
+                      icon: Semantics(label: label, child: Icon(icon)),
+                      label: Text(label),
+                    ),
+                ],
+              ),
             ),
           ),
           const VerticalDivider(width: 1),
@@ -154,6 +160,7 @@ class _AppShellScaffoldState extends ConsumerState<AppShellScaffold> {
     int selectedIndex,
   ) {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final hideLabels = MediaQuery.textScalerOf(context).scale(1) > 1.3;
     final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
     final showBar = _showBottomBar && !keyboardVisible && selectedIndex != 2;
     return ClipRect(
@@ -185,7 +192,11 @@ class _AppShellScaffoldState extends ConsumerState<AppShellScaffold> {
                   },
                   destinations: [
                     for (final (icon, label) in destinations)
-                      NavigationDestination(icon: Icon(icon), label: label),
+                      NavigationDestination(
+                        icon: Semantics(label: label, child: Icon(icon)),
+                        label: hideLabels ? '' : label,
+                        tooltip: label,
+                      ),
                   ],
                 )
               : const SizedBox.shrink(key: ValueKey('hidden-navigation')),

@@ -47,12 +47,10 @@ void main() {
       );
       await tester.pump();
       await tester.pump();
-
       expect(find.text('Could not refresh the live price.'), findsOneWidget);
       expect(find.byType(StaleBadge), findsOneWidget);
     },
   );
-
   testWidgets('stale quote status stays stable while its card scrolls away', (
     tester,
   ) async {
@@ -93,12 +91,10 @@ void main() {
     );
     await tester.pump();
     expect(find.byType(StaleBadge), findsOneWidget);
-
     await tester.drag(find.byType(Scrollable).first, const Offset(0, -300));
     await tester.pumpAndSettle();
     expect(find.byType(StaleBadge), findsOneWidget);
   });
-
   Widget host(AiCard card, {DateTime? now}) => spApp(
     SingleChildScrollView(
       child: AiCardView(card: card, onExplain: (_) {}),
@@ -113,7 +109,24 @@ void main() {
           .overrideWith((ref) => const Stream.empty()),
     ],
   );
-
+  testWidgets('a chart with no points keeps its readable text fallback', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(
+        AiCard(
+          id: 'empty-chart',
+          type: 'chart',
+          title: 'RELIANCE chart',
+          fallbackText: 'No chart data is available yet.',
+          body: const {'points': <Object?>[]},
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('No chart data is available yet.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('B12 an explanation card never shows freshness', (tester) async {
     await tester.pumpWidget(
       host(

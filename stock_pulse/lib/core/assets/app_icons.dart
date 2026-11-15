@@ -6,6 +6,9 @@ abstract final class AppIcons {
   static const favourite = Icons.star_rounded;
   static const favouriteOutline = Icons.star_outline_rounded;
   static const reorder = Icons.drag_handle_rounded;
+  static const expand = Icons.fullscreen;
+  static const settings = Icons.tune;
+  static const edit = Icons.edit_outlined;
   static const watchlist = Icons.show_chart_rounded;
   static const options = Icons.table_chart_outlined;
   static const ai = Icons.auto_awesome_outlined;
@@ -47,4 +50,6 @@ abstract final class AppIcons {
   static const clearLog = Icons.delete_sweep;
   static const notifications = Icons.notifications_active_outlined;
   static const notificationsOff = Icons.notifications_off_outlined;
+  static const buyAtPrice = Icons.arrow_upward;
+  static const sellAtPrice = Icons.arrow_downward;
 }

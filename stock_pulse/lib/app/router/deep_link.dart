@@ -2,6 +2,9 @@ import 'package:stock_pulse/app/router/app_route.dart';
 
 /// External links can open read-only screens or a guarded ticket prefill.
 Uri? normaliseLink(Uri uri) {
+  if (uri.scheme == 'stockpulse' && uri.host == 'stock') {
+    uri = StockRoute.expandShortLink(uri);
+  }
   if (uri.hasScheme &&
       !((uri.scheme == 'stockpulse' && uri.host == 'app') ||
           (uri.scheme == 'https' &&
@@ -19,6 +22,7 @@ Uri? normaliseLink(Uri uri) {
       route is AiChatRoute ||
       route is PortfolioRoute ||
       route is StockRoute ||
+      route is ChartRoute ||
       route is TradeRoute ||
       route is AlertsRoute;
   if (!allowed) return null;

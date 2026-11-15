@@ -6,8 +6,8 @@ import 'package:stock_pulse/app/di/app_providers.dart';
 import 'package:stock_pulse/core/analytics/di/analytics_providers.dart';
 import 'package:stock_pulse/core/analytics/domain/analytics_events.dart';
 import 'package:stock_pulse/core/network/di/network_providers.dart';
-import 'package:stock_pulse/core/observability/data/perf_marks.dart';
 import 'package:stock_pulse/core/observability/di/observability_providers.dart';
+import 'package:stock_pulse/core/observability/perf_marks.dart';
 import 'package:stock_pulse/core/storage/application/snapshot_scheduler.dart';
 import 'package:stock_pulse/core/storage/di/storage_providers.dart';
 

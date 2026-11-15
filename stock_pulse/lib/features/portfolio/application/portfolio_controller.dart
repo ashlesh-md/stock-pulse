@@ -138,6 +138,7 @@ class PortfolioController extends AsyncNotifier<PortfolioState> {
       Success(:final value) => state.requireValue.copyWith(
         holdings: value,
         loadingHoldings: false,
+        holdingsLoaded: true,
       ),
       Failure() => state.requireValue.copyWith(
         loadingHoldings: false,
@@ -155,7 +156,7 @@ class PortfolioController extends AsyncNotifier<PortfolioState> {
           final current = state.value;
           if (current == null) return;
           state = AsyncData(current.copyWith(holdings: holdings));
-          _watchPrices(current.positions, holdings: current.holdings);
+          _watchPrices(current.positions, holdings: holdings);
         });
   }
 

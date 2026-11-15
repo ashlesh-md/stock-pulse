@@ -36,18 +36,44 @@ final class TradeRoute extends AppRoute {
 }
 
 final class StockRoute extends AppRoute {
-  const StockRoute(this.instrumentId);
+  const StockRoute(this.instrumentId, {this.selection});
 
-  factory StockRoute.fromState(GoRouterState state) =>
-      StockRoute(state.pathParameters['id']!);
+  factory StockRoute.fromState(GoRouterState state) => StockRoute.fromQuery(
+    state.pathParameters['id']!,
+    state.uri.queryParameters,
+  );
+
+  factory StockRoute.fromQuery(String id, Map<String, String> query) {
+    final hasChartQuery =
+        query.containsKey('range') ||
+        query.containsKey('interval') ||
+        query.containsKey('type');
+    return StockRoute(
+      id,
+      selection: hasChartQuery ? ChartSelection.fromQuery(query) : null,
+    );
+  }
+
+  static Uri expandShortLink(Uri uri) => Uri(
+    scheme: 'stockpulse',
+    host: 'app',
+    path: '/stock${uri.path}',
+    query: uri.hasQuery ? uri.query : null,
+  );
 
   static const path = '/stock/:id';
   static const name = 'stockDetail';
 
   final String instrumentId;
+  final ChartSelection? selection;
 
   @override
-  String get location => '/stock/${Uri.encodeComponent(instrumentId)}';
+  String get location =>
+      _withQuery('/stock/${Uri.encodeComponent(instrumentId)}', {
+        'range': ?selection?.range.label,
+        'interval': ?selection?.interval.apiName,
+        'type': ?selection?.type?.name,
+      });
 }
 
 /// The builder reads its legs from the strategy draft controller, which the
@@ -100,6 +126,10 @@ final class OrderTicketRoute extends AppRoute {
             final int n when n > 0 => n,
             _ => null,
           },
+          quantity: switch (int.tryParse(query['qty'] ?? '')) {
+            final int n when n > 0 => n,
+            _ => null,
+          },
           product: ProductType.values.asNameMap()[query['product']],
           limitPrice: switch (double.tryParse(query['price'] ?? '')) {
             final double n when n.isFinite && n > 0 => n,
@@ -115,6 +145,7 @@ final class OrderTicketRoute extends AppRoute {
       _withQuery('/order/${Uri.encodeComponent(args.instrumentId)}', {
         'side': args.side.name,
         'lots': ?args.lots?.toString(),
+        'qty': ?args.quantity?.toString(),
         'product': ?args.product?.name,
         'price': ?args.limitPrice?.toString(),
         if (args.source != OrderSource.manual) 'source': args.source.name,

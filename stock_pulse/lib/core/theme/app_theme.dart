@@ -22,6 +22,8 @@ abstract final class AppTheme {
       onPrimary: c.onAccent,
       secondary: c.accent,
       onSecondary: c.onAccent,
+      secondaryContainer: c.accent,
+      onSecondaryContainer: c.onAccent,
       error: c.down,
       onError: c.onSell,
       surface: c.surface0,

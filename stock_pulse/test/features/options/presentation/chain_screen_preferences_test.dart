@@ -96,6 +96,15 @@ void main() {
     verify(() => repository.expiries('RELIANCE')).called(1);
   });
 
+  testWidgets('B28 first launch defaults to NIFTY when no choice was saved', (
+    tester,
+  ) async {
+    prefs = FakeLocalPrefs();
+    await pump(tester);
+    expect(find.text('NIFTY options'), findsOneWidget);
+    verify(() => repository.expiries('NIFTY')).called(1);
+  });
+
   testWidgets('opening an explicit underlying remembers it', (tester) async {
     await pump(tester, underlying: 'NIFTY');
     await tester.pump();

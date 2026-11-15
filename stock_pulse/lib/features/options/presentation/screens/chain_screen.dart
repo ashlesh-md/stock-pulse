@@ -10,7 +10,6 @@ import 'package:stock_pulse/core/feedback/domain/feedback_message.dart';
 import 'package:stock_pulse/core/l10n/l10n_context.dart';
 import 'package:stock_pulse/core/network/domain/socket_messages.dart';
 import 'package:stock_pulse/core/storage/di/storage_providers.dart';
-import 'package:stock_pulse/core/widgets/empty_view.dart';
 import 'package:stock_pulse/core/widgets/error_view.dart';
 import 'package:stock_pulse/core/widgets/sp_picker.dart';
 import 'package:stock_pulse/core/widgets/sp_tab_app_bar.dart';
@@ -77,20 +76,10 @@ class _ChainScreenState extends ConsumerState<ChainScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final underlying =
-        widget.underlying ?? prefs?.value?.data.lastChainUnderlying;
+        widget.underlying ??
+        prefs?.value?.data.lastChainUnderlying ??
+        _optionUnderlyings.first;
     final s = context.strings.options;
-    if (underlying == null) {
-      return Scaffold(
-        appBar: SpTabAppBar(title: Text(s.sectionTitle)),
-        body: EmptyView(
-          icon: AppIcons.options,
-          title: s.chooseUnderlying,
-          message: s.chooseUnderlyingHint,
-          actionLabel: s.chooseUnderlyingAction,
-          onAction: () => unawaited(_chooseUnderlying()),
-        ),
-      );
-    }
     final target = (underlying: underlying, expiry: widget.expiry);
     final provider = chainControllerProvider(target);
     ref.listen(provider, (_, next) {
@@ -135,6 +124,7 @@ class _ChainScreenState extends ConsumerState<ChainScreen> {
     return Scaffold(
       appBar: SpTabAppBar(
         title: Text(s.title(underlying)),
+        spacious: SpTabAppBar.forLargeText(context),
         actions: [
           IconButton(
             tooltip: s.chooseUnderlying,

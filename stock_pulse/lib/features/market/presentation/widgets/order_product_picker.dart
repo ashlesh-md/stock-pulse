@@ -22,20 +22,27 @@ class OrderProductPicker extends StatelessWidget {
       ProductType.mis => s.intraday,
       ProductType.nrml => s.carryForward,
     };
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(s.product),
-      trailing: SpPicker<ProductType>(
-        title: s.product,
-        values: [
-          if (lotSize == 1) ProductType.cnc,
-          ProductType.mis,
-          if (lotSize > 1) ProductType.nrml,
-        ],
-        label: label,
-        selected: value,
-        enabled: onChanged != null,
-        onChanged: (next) => onChanged?.call(next),
+    // A ListTile trailing as wide as the tile is an error; long labels at
+    // large text get at most 60 % of the row and wrap inside the button.
+    return LayoutBuilder(
+      builder: (context, constraints) => ListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(s.product),
+        trailing: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.6),
+          child: SpPicker<ProductType>(
+            title: s.product,
+            values: [
+              if (lotSize == 1) ProductType.cnc,
+              ProductType.mis,
+              if (lotSize > 1) ProductType.nrml,
+            ],
+            label: label,
+            selected: value,
+            enabled: onChanged != null,
+            onChanged: (next) => onChanged?.call(next),
+          ),
+        ),
       ),
     );
   }

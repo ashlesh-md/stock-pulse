@@ -42,6 +42,23 @@ void main() {
     return events;
   }
 
+  test('unknown AI card versions preserve their text fallback across repeated frames', () async {
+    final line = <String, Object?>{
+      'e': 'card',
+      'card': <String, Object?>{
+        'id': 'future',
+        'v': 2,
+        'type': 'quote',
+        'fallbackText': 'Quote unavailable',
+      },
+    };
+    for (var i = 0; i < 2; i++) {
+      final event = aiEventFromLine(line)! as CardAdded;
+      expect(event.card.type, 'unknown');
+      expect(event.card.text, 'Quote unavailable');
+    }
+    await ask(const []);
+  });
   test('posts the question, request id and topic to the ask path', () async {
     final events = repo
         .ask('pcr?', topic: const AskTopic(underlying: 'NIFTY'))

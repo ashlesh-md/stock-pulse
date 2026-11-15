@@ -9,8 +9,17 @@ import 'package:stock_pulse/features/alerts/di/alerts_providers.dart';
 import 'package:stock_pulse/features/alerts/domain/price_alert.dart';
 
 class CreateAlertForm extends ConsumerStatefulWidget {
-  const CreateAlertForm({super.key, this.onCreated});
+  const CreateAlertForm({
+    super.key,
+    this.onCreated,
+    this.initialSymbol,
+    this.initialPrice,
+    this.initialCondition = AlertCondition.above,
+  });
   final VoidCallback? onCreated;
+  final String? initialSymbol;
+  final double? initialPrice;
+  final AlertCondition initialCondition;
   @override
   ConsumerState<CreateAlertForm> createState() => _CreateAlertFormState();
 }
@@ -21,6 +30,14 @@ class _CreateAlertFormState extends ConsumerState<CreateAlertForm> {
   AlertCondition _condition = AlertCondition.above;
   bool _busy = false;
   String? _error;
+  @override
+  void initState() {
+    super.initState();
+    _symbol.text = widget.initialSymbol ?? '';
+    _price.text = widget.initialPrice?.toStringAsFixed(2) ?? '';
+    _condition = widget.initialCondition;
+  }
+
   @override
   void dispose() {
     _symbol.dispose();

@@ -19,7 +19,8 @@ The whole project, from the PRD to the code, was built by a **team of AI agents*
 | Area | What works |
 |---|---|
 | **Watchlist** | Live prices over a WebSocket, advancing/declining summary, favourites pinned to the top, drag to reorder in Edit mode, cached first frame on launch |
-| **Stock page** | Candles, Heikin-Ashi, OHLC, line and area charts. Ranges from 1D to 5Y and intervals from 1m to 1w. Pinch, pan, fling, double-tap reset, long-press crosshair. Depth, stats, Buy/Sell |
+| **Stock page** | Candles, Heikin-Ashi, OHLC, line and area charts. Ranges from 1D to 5Y and intervals from 1m to 1w. Pinch, pan, fling, double-tap reset, long-press crosshair. Full-screen landscape chart, log scale and gridlines, all remembered. Depth, stats, Buy/Sell |
+| **Chart tools** | Horizontal and trend lines, Fibonacci retracement, saved per symbol. From the crosshair or a selected line: **set an alert** or place a **buy/sell limit** at that price, snapped to the tick. Before the open, 1D shows the previous session |
 | **Indicators** | SMA, EMA, VWAP, RSI pane, Bollinger Bands, MACD; up to 4 studies per chart, saved per symbol |
 | **Option chain** | NIFTY and stock options across several expiries. Calls and puts with LTP, OI bars and ΔOI. ATM row marked, opens centred on ATM, greeks |
 | **Order entry** | Market, limit and SL orders; MIS/CNC/NRML products; lots for F&O. Blocks orders on stale prices. Same-key retries, a "checking status" step and Pending orders that reconcile later |
@@ -28,6 +29,9 @@ The whole project, from the PRD to the code, was built by a **team of AI agents*
 | **AI assistant** | Ask in plain English ("How is RELIANCE doing today?", "Explain theta"). Answers stream in as live cards: quotes, mini charts, chain snippets, payoffs, tables. Attachments, suggested prompts, retry only on failed answers, history kept on the device |
 | **Strategy builder** | Up to 4 option legs, payoff at expiry and today, breakevens, max profit and max loss |
 | **Responsive** | Bottom bar on phones, navigation rail on tablets, two panes on desktop and web |
+| **Foldables** | Hinge-aware panes on Galaxy Fold / Pixel Fold (list on one side, stock on the other), tabletop posture, cover screen down to 260 dp; folding and unfolding keeps your place |
+| **Localisation** | Every string in `AppStrings`, with a pseudo-locale (accented, ~35% longer) used to test every main screen at 360 dp and large text |
+| **Failure handling** | Each failure in the PRD (F1–F18: offline, timeouts, bad payloads, clock skew, killed mid-order, storage errors, expired session, …) has a named test, checked by a trace test |
 | **Developer tools** | Socket Lab shows raw frames and can drop, freeze or skip sequence numbers on purpose. A debug market clock jumps through pre-open, open, close and expiry |
 
 ## Real-time engineering
@@ -77,13 +81,13 @@ flowchart LR
 
 | Check | Result |
 |---|---|
-| Tests | **1,305**: app 997, server 268, option_math 40 |
+| Tests | **1,476**: app 1,168, server 268, option_math 40 |
 | Line coverage | **100%** of `stock_pulse/lib`, with an import test so no file escapes |
 | Static analysis | `flutter analyze --fatal-infos` clean, with a strict shared lint set |
 | File size | 0 files over 300 lines |
 | Layer rules | 0 violations |
 
-Every feature was written test-first, and the server has its own end-to-end tests over real sockets.
+Every feature was written test-first, and the server has its own end-to-end tests over real sockets. Startup, frame-time and chart-rendering budgets are defined, but the device runs that measure them are still to do (see [Roadmap](#roadmap)).
 
 ## Run it
 
@@ -134,7 +138,8 @@ flowchart LR
 - **Reviews go round until they pass.** The architect and QA reviewed the PRD and raised 12 High issues, and the PM revised it until both confirmed. Design sign-off took two rounds.
 - **Sign-offs.** Product, design, engineering and QA each sign against a written checklist. The human approves three gates.
 - **Change requests mid-build.** I raised two change requests with 34 points: Kite-style charts, an application layer, go_router, 300-line files, localisation, analytics, foldables and more. Each went through product, design and architecture before a refactor wave.
-- **Honest verification.** The manager re-ran every check itself before marking work done, and tested the app in the simulator. Bugs found there went back into the pipeline.
+- **Honest verification.** The manager re-ran every check itself before marking work done, and tested the app in the iOS simulator and a Pixel Fold emulator. Bugs found there went back into the pipeline.
+- **Review that catches real bugs.** The final code review found seven High issues that tests had missed, among them a chart limit order priced from the wrong candle, an F&O exit that would have multiplied the quantity by the lot size, and an order ticket that could stay blocked after a timeout. Each was fixed with a test that fails without the fix, then re-reviewed before engineering signed off.
 
 ### Mission-control dashboard
 
@@ -148,10 +153,11 @@ Every agent logged its status, messages, tasks and sign-offs to an append-only e
 
 | Measure | Count |
 |---|---|
-| Events logged | 1,042 |
-| Agent-to-agent messages | 261, in 8 threads (most in architecture and build) |
-| Documents produced | 64 (PRD, UX spec, design system, TRD, HLD, 4 LLDs, 21 ADRs, stories, reviews) |
-| Roles | 15 |
+| Events logged | 1,138 |
+| Agent-to-agent messages | 287, in 8 threads (most in architecture and build) |
+| Documents produced | 63 (PRD, UX spec, design system, TRD, HLD, 4 LLDs, 21 ADRs, stories, reviews) |
+| Roles | 18 |
+| Sign-offs | Product, design, engineering, QA and the human: all approved |
 
 ![Agent team dashboard](docs/media/dashboard.png)
 
@@ -164,13 +170,8 @@ python3 tools/agent-team/scripts/team.py serve --port 8095   # then open http://
 
 ## Roadmap
 
-Planned stories not built yet:
-
-- **Chart tools:** drawing tools (horizontal and trend lines), Fibonacci, a landscape full-screen chart with Buy/Sell, alerts and limit orders at a price on the chart.
-- **Failure-case suites** for every screen.
-- **Foldable-phone layouts:** hinge-aware panes and tabletop posture.
-- **Device runs** for startup, frame time and latency.
-- **Accessibility sweeps.**
+- **Device runs** for startup time, frame time and memory, and chart rendering (stories S-47, S-48, S-76). The budgets and the harness exist; they need a real phone, because emulator timings are not meaningful.
+- A real broker integration in place of the simulated server.
 
 ## Repository layout
 

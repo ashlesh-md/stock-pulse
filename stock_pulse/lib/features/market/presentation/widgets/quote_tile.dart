@@ -75,62 +75,117 @@ class QuoteTile extends ConsumerWidget {
         (s) => s.value?.favouriteIds.contains(instrument.id) ?? false,
       ),
     );
-    return ListTile(
-      onTap: onTap,
-      onLongPress: actionsEnabled ? () => _showActions(context, ref) : null,
-      leading: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (reorderIndex case final int index)
-            ReorderableDragStartListener(
-              index: index,
-              child: Tooltip(
-                message: strings.market.reorder,
-                child: const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Icon(AppIcons.reorder),
-                ),
+    final controls = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (reorderIndex case final int index)
+          ReorderableDragStartListener(
+            index: index,
+            child: Tooltip(
+              message: strings.market.reorder,
+              child: const Padding(
+                padding: EdgeInsets.all(8),
+                child: Icon(AppIcons.reorder),
               ),
             ),
-          IconButton(
-            tooltip: favourite
-                ? strings.market.unpinFavourite
-                : strings.market.pinFavourite,
-            onPressed: () => ref
-                .read(watchlistControllerProvider.notifier)
-                .toggleFavourite(instrument.id),
-            icon: Icon(
-              favourite ? AppIcons.favourite : AppIcons.favouriteOutline,
-            ),
           ),
-        ],
-      ),
-      title: Text(
-        instrument.symbol,
-        style: const TextStyle(fontWeight: FontWeight.w600),
-      ),
-      subtitle: Text(
-        strings.market.instrumentSubtitle(instrument.exchange, instrument.name),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      trailing: quote == null
-          ? Text(strings.common.noValue)
-          : Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
+        IconButton(
+          tooltip: favourite
+              ? strings.market.unpinFavourite
+              : strings.market.pinFavourite,
+          onPressed: () => ref
+              .read(watchlistControllerProvider.notifier)
+              .toggleFavourite(instrument.id),
+          icon: Icon(
+            favourite ? AppIcons.favourite : AppIcons.favouriteOutline,
+          ),
+        ),
+      ],
+    );
+    final title = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          instrument.symbol,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        Text(
+          strings.market.instrumentSubtitle(
+            instrument.exchange,
+            instrument.name,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    );
+    final price = quote == null
+        ? Text(strings.common.noValue)
+        : SpPriceCell(
+            value: quote.ltp,
+            text: Fmt.number(quote.ltp),
+            isStale: stale,
+          );
+    final change = quote == null
+        ? const SizedBox.shrink()
+        : ChangeChip(change: quote.change, changePct: quote.changePercent);
+    return InkWell(
+      onTap: onTap,
+      onLongPress: actionsEnabled ? () => _showActions(context, ref) : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final stacked =
+                constraints.maxWidth < 420 ||
+                MediaQuery.textScalerOf(context).scale(1) > 1.3;
+            if (stacked) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      controls,
+                      const SizedBox(width: 8),
+                      Expanded(child: title),
+                      const SizedBox(width: 8),
+                      // At large text the controls and the price can be
+                      // wider than a phone; past half the row the price
+                      // shrinks rather than being cut off.
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: constraints.maxWidth / 2,
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: price,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Align(alignment: Alignment.centerRight, child: change),
+                ],
+              );
+            }
+            return Row(
               children: [
-                SpPriceCell(
-                  value: quote.ltp,
-                  text: Fmt.number(quote.ltp),
-                  isStale: stale,
-                ),
-                ChangeChip(
-                  change: quote.change,
-                  changePct: quote.changePercent,
+                controls,
+                const SizedBox(width: 8),
+                Expanded(child: title),
+                const SizedBox(width: 12),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [price, change],
                 ),
               ],
-            ),
+            );
+          },
+        ),
+      ),
     );
   }
 

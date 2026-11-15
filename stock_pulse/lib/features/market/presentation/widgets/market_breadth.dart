@@ -19,14 +19,15 @@ class MarketBreadth extends ConsumerWidget {
     final strings = context.strings.market;
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 16,
+        runSpacing: 2,
         children: [
           Text(
             strings.advancing(up),
             style: style?.copyWith(color: context.sp.up),
           ),
-          const SizedBox(width: 16),
           Text(
             strings.declining(down),
             style: style?.copyWith(color: context.sp.down),

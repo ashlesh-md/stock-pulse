@@ -18,6 +18,7 @@ import 'package:stock_pulse/core/push/data/noop_push_service.dart';
 import 'package:stock_pulse/core/push/di/push_providers.dart';
 import 'package:stock_pulse/core/push/domain/push_service.dart';
 import 'package:stock_pulse/core/storage/di/storage_providers.dart';
+import 'package:stock_pulse/features/chart/di/chart_data_providers.dart';
 import 'package:stock_pulse/features/market/di/market_data_providers.dart';
 import 'package:stock_pulse/features/market/domain/market_repository.dart';
 
@@ -50,6 +51,7 @@ class AppHarness {
     snapshot: snapshot.future,
     overrides: [
       marketSocketProvider.overrideWithValue(socket),
+      chartDirectoryProvider.overrideWithValue(null),
       marketRepositoryProvider.overrideWithValue(marketRepository),
       snapshotStoreProvider.overrideWithValue(FakeSnapshotStore()),
       localPrefsProvider.overrideWith((ref) async {

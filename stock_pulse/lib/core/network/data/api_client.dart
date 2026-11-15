@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-
 import 'package:stock_pulse/core/config/app_config.dart';
 import 'package:stock_pulse/core/error/app_error.dart';
 import 'package:stock_pulse/core/error/result.dart';
 import 'package:stock_pulse/core/network/data/core_api.dart';
+import 'package:stock_pulse/core/network/data/read_retry_policy.dart';
 import 'package:stock_pulse/core/network/domain/endpoint.dart';
 
 /// Thin wrapper over `package:http` for the REST API.
@@ -18,13 +18,25 @@ class ApiClient {
     this._config, {
     http.Client? client,
     this.timeout = const Duration(seconds: 10),
-  }) : _client = client ?? http.Client();
+    Future<void> Function(Duration delay)? wait,
+  }) : _client = client ?? http.Client(),
+       _wait = wait ?? _waitFor;
 
   final AppConfig _config;
   final http.Client _client;
   final Duration timeout;
+  final Future<void> Function(Duration delay) _wait;
 
-  Future<Result<Object?>> call(Endpoint endpoint) {
+  Future<Result<Object?>> call(Endpoint endpoint) async {
+    final first = await _send(_request(endpoint));
+    if (endpoint.method != HttpMethod.get) return first;
+    final delay = ReadRetryPolicy.delayFor(first);
+    if (delay == null) return first;
+    await _wait(delay);
+    return _send(_request(endpoint));
+  }
+
+  http.Request _request(Endpoint endpoint) {
     final request = http.Request(
       endpoint.method.name.toUpperCase(),
       uriOf(endpoint),
@@ -34,7 +46,7 @@ class ApiClient {
         ..headers['content-type'] = 'application/json'
         ..body = jsonEncode(body);
     }
-    return _send(request);
+    return request;
   }
 
   /// The one place that adds the auth header. [req] has its full URL
@@ -110,7 +122,60 @@ class ApiClient {
         error is Map
             ? '${error['message']}'
             : 'Request failed (${res.statusCode})',
+        retryAfter: res.statusCode == 429 ? _retryAfter(res.headers) : null,
       ),
     );
   }
+
+  Duration? _retryAfter(Map<String, String> headers) {
+    String? value;
+    for (final entry in headers.entries) {
+      if (entry.key.toLowerCase() == 'retry-after') {
+        value = entry.value;
+        break;
+      }
+    }
+    if (value == null) return null;
+    final seconds = int.tryParse(value);
+    if (seconds != null) return Duration(seconds: seconds.clamp(0, 30));
+    final retryAt = _parseHttpDate(value);
+    if (retryAt != null) {
+      final delay = retryAt.difference(DateTime.now().toUtc());
+      return delay.isNegative ? Duration.zero : delay;
+    }
+    return null;
+  }
+
+  DateTime? _parseHttpDate(String value) {
+    final match = RegExp(
+      r'^\w{3}, (\d{2}) (\w{3}) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$',
+    ).firstMatch(value);
+    if (match == null) return null;
+    const months = {
+      'Jan': 1,
+      'Feb': 2,
+      'Mar': 3,
+      'Apr': 4,
+      'May': 5,
+      'Jun': 6,
+      'Jul': 7,
+      'Aug': 8,
+      'Sep': 9,
+      'Oct': 10,
+      'Nov': 11,
+      'Dec': 12,
+    };
+    final month = months[match[2]];
+    if (month == null) return null;
+    return DateTime.utc(
+      int.parse(match[3]!),
+      month,
+      int.parse(match[1]!),
+      int.parse(match[4]!),
+      int.parse(match[5]!),
+      int.parse(match[6]!),
+    );
+  }
+
+  static Future<void> _waitFor(Duration delay) => Future<void>.delayed(delay);
 }

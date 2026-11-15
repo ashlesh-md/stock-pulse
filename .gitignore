@@ -2,7 +2,9 @@
 .dart_tool/
 .packages
 build/
-coverage/
+/stock_pulse/coverage/
+/market_server/coverage/
+/packages/option_math/coverage/
 .flutter-plugins
 .flutter-plugins-dependencies
 **/ios/Flutter/ephemeral/
@@ -21,3 +23,7 @@ __pycache__/
 **/ios/Flutter/flutter_export_environment.sh
 **/macos/Flutter/GeneratedPluginRegistrant.swift
 **/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+
+# Raw Codex run transcripts
+docs/team/codex-logs/
+.vscode/

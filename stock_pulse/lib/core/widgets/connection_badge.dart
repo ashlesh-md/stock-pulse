@@ -29,6 +29,7 @@ class ConnectionBadge extends ConsumerWidget {
       NetworkStatus.delayed => (strings.connectionDelayed, sp.warn, sp.warn),
       NetworkStatus.offline => (strings.connectionOffline, sp.warn, sp.warn),
     };
+    final compact = MediaQuery.textScalerOf(context).scale(1) > 1.3;
     return Semantics(
       label: strings.connectionSemantics(label),
       child: ExcludeSemantics(
@@ -44,12 +45,14 @@ class ConnectionBadge extends ConsumerWidget {
                   decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
                   child: const SizedBox.square(dimension: 8),
                 ),
-              const SizedBox(width: SpSpace.s1),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelMedium
-                    ?.copyWith(color: text),
-              ),
+              if (!compact) ...[
+                const SizedBox(width: SpSpace.s1),
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.labelMedium
+                      ?.copyWith(color: text),
+                ),
+              ],
             ],
           ),
         ),

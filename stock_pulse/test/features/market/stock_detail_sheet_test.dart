@@ -15,16 +15,17 @@ import 'package:stock_pulse/core/network/domain/subscriptions.dart';
 import 'package:stock_pulse/core/observability/di/observability_providers.dart';
 import 'package:stock_pulse/core/storage/di/storage_providers.dart';
 import 'package:stock_pulse/core/theme/app_theme.dart';
+import 'package:stock_pulse/features/chart/di/chart_data_providers.dart';
 import 'package:stock_pulse/features/chart/di/chart_studies_providers.dart';
 import 'package:stock_pulse/features/chart/domain/indicators/study_spec.dart';
 import 'package:stock_pulse/features/chart/domain/studies_store.dart';
+import 'package:stock_pulse/features/chart/presentation/chart_toolbar.dart';
 import 'package:stock_pulse/features/market/di/market_data_providers.dart';
 import 'package:stock_pulse/features/market/domain/candle.dart';
 import 'package:stock_pulse/features/market/domain/instrument.dart';
 import 'package:stock_pulse/features/market/domain/market_repository.dart';
 import 'package:stock_pulse/features/market/domain/quote.dart';
 import 'package:stock_pulse/features/market/presentation/screens/stock_detail_screen.dart';
-import 'package:stock_pulse/features/market/presentation/widgets/stock_chart_toolbar.dart';
 import 'package:stock_pulse/features/orders/domain/order.dart'
     show OrderSide, OrderType;
 import 'package:stock_pulse/features/portfolio/di/portfolio_data_providers.dart';
@@ -123,6 +124,7 @@ void main() {
     overrides: [
       crashReporterProvider.overrideWithValue(FakeCrashReporter()),
       marketRepositoryProvider.overrideWithValue(repo),
+      chartDirectoryProvider.overrideWithValue(null),
       marketClockProvider.overrideWith(
         (ref) => Stream.value(MarketClockState.fallback),
       ),

@@ -1,10 +1,10 @@
 part of 'app_route.dart';
 
-sealed class ShellRoute extends AppRoute {
-  const ShellRoute();
+sealed class ShellTabRoute extends AppRoute {
+  const ShellTabRoute();
 }
 
-final class WatchlistRoute extends ShellRoute {
+final class WatchlistRoute extends ShellTabRoute {
   const WatchlistRoute();
 
   static const path = '/watchlist';
@@ -14,7 +14,7 @@ final class WatchlistRoute extends ShellRoute {
   String get location => path;
 }
 
-final class OptionChainRoute extends ShellRoute {
+final class OptionChainRoute extends ShellTabRoute {
   const OptionChainRoute({this.underlying, this.expiry});
 
   /// Unknown keys are ignored; empty values read as absent.
@@ -38,7 +38,7 @@ final class OptionChainRoute extends ShellRoute {
   String get location => _withQuery(path, {'u': ?underlying, 'e': ?expiry});
 }
 
-final class AiChatRoute extends ShellRoute {
+final class AiChatRoute extends ShellTabRoute {
   const AiChatRoute();
 
   static const path = '/ai';
@@ -48,7 +48,7 @@ final class AiChatRoute extends ShellRoute {
   String get location => path;
 }
 
-final class PortfolioRoute extends ShellRoute {
+final class PortfolioRoute extends ShellTabRoute {
   const PortfolioRoute({this.section});
 
   /// An unknown `tab` value reads as no tab.
@@ -67,7 +67,7 @@ final class PortfolioRoute extends ShellRoute {
   String get location => _withQuery(path, {'tab': ?section?.name});
 }
 
-final class MoreRoute extends ShellRoute {
+final class MoreRoute extends ShellTabRoute {
   const MoreRoute();
 
   static const path = '/more';

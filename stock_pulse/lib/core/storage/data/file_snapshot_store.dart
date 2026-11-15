@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:stock_pulse/core/market_time/domain/clock.dart';
-import 'package:stock_pulse/core/observability/data/perf_marks.dart';
 import 'package:stock_pulse/core/observability/domain/crash_reporter.dart';
+import 'package:stock_pulse/core/observability/perf_marks.dart';
 import 'package:stock_pulse/core/storage/data/atomic_json_file.dart';
 import 'package:stock_pulse/core/storage/domain/snapshot.dart';
 import 'package:stock_pulse/core/storage/domain/snapshot_store.dart';
@@ -11,12 +11,16 @@ import 'package:stock_pulse/core/storage/domain/snapshot_store.dart';
 /// The app's [SnapshotStore], created in `bootstrap()` on the same
 /// [AtomicJsonFile] that [readInitial] used, so there is one writer.
 class FileSnapshotStore implements SnapshotStore {
-  FileSnapshotStore(this._file);
+  FileSnapshotStore(this._file, {this.reporter});
 
   static const fileName = 'snapshot.json';
 
   final AtomicJsonFile _file;
+
+  /// Gets one `cache_write_failed` per run.
+  final CrashReporter? reporter;
   bool _dirty = false;
+  bool _writeFailureLogged = false;
 
   /// Read by `SnapshotScheduler` for its 30 s save.
   bool get isDirty => _dirty;
@@ -104,9 +108,16 @@ class FileSnapshotStore implements SnapshotStore {
   void markStructuralDirty() => _dirty = true;
 
   @override
-  Future<void> saveNow(Snapshot s) {
+  Future<void> saveNow(Snapshot s) async {
     _dirty = false;
-    return _file.write(s.toJson());
+    try {
+      await _file.write(s.toJson());
+    } on Object catch (e) {
+      _dirty = true;
+      if (_writeFailureLogged) return;
+      _writeFailureLogged = true;
+      reporter?.log('cache_write_failed', {'error': e.runtimeType.toString()});
+    }
   }
 
   @override

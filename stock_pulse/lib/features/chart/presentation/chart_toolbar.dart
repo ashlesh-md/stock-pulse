@@ -7,14 +7,18 @@ import 'package:stock_pulse/core/format/formatters.dart';
 import 'package:stock_pulse/core/l10n/l10n_context.dart';
 import 'package:stock_pulse/core/theme/sp_theme_x.dart';
 import 'package:stock_pulse/core/widgets/sp_picker.dart';
+import 'package:stock_pulse/features/chart/di/chart_providers.dart';
+import 'package:stock_pulse/features/chart/presentation/chart_labels.dart';
+import 'package:stock_pulse/features/chart/presentation/chart_settings_sheet.dart';
+import 'package:stock_pulse/features/chart/presentation/drawings/drawing_tool_button.dart';
+import 'package:stock_pulse/features/chart/presentation/fullscreen/chart_expand_button.dart';
 import 'package:stock_pulse/features/chart/presentation/studies/studies_sheet.dart';
 import 'package:stock_pulse/features/market/di/market_providers.dart';
 import 'package:stock_pulse/features/market/domain/candle.dart';
-import 'package:stock_pulse/features/market/presentation/widgets/chart_labels.dart';
 
 /// Range performance and high/low, plus the interval and chart-type menus.
-class StockChartToolbar extends ConsumerWidget {
-  const StockChartToolbar({super.key, required this.instrumentId});
+class ChartToolbar extends ConsumerWidget {
+  const ChartToolbar({super.key, required this.instrumentId});
 
   final String instrumentId;
 
@@ -22,7 +26,9 @@ class StockChartToolbar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final provider = stockDetailControllerProvider(instrumentId);
     final s = ref.watch(provider.select((s) => s.value!));
-    final controller = ref.read(provider.notifier);
+    final chartProvider = chartControllerProvider(instrumentId);
+    final chart = ref.watch(chartProvider).value;
+    final controller = ref.read(chartProvider.notifier);
     final theme = Theme.of(context);
     final strings = context.strings.market;
     final change = s.rangeChange;
@@ -78,9 +84,9 @@ class StockChartToolbar extends ConsumerWidget {
     );
     final intervalPicker = SpPicker<CandleInterval>(
       title: strings.intervalTooltip,
-      values: s.range.intervals,
+      values: chart?.range.intervals ?? s.range.intervals,
       label: (interval) => intervalOptionLabel(strings, interval),
-      selected: s.interval,
+      selected: chart?.interval ?? s.interval,
       selectedLabel: (interval) => interval.apiName,
       onChanged: controller.selectInterval,
     );
@@ -88,8 +94,8 @@ class StockChartToolbar extends ConsumerWidget {
       title: strings.chartTypeTooltip,
       values: ChartType.values,
       label: (type) => chartTypeLabel(strings, type),
-      selected: s.chartType,
-      onChanged: controller.selectChartType,
+      selected: chart?.type ?? s.chartType,
+      onChanged: controller.selectType,
     );
     final loadStatus = Row(
       mainAxisSize: MainAxisSize.min,
@@ -115,6 +121,12 @@ class StockChartToolbar extends ConsumerWidget {
           onPressed: () => unawaited(showStudiesSheet(context, instrumentId)),
           icon: const Icon(AppIcons.options),
         );
+        final settingsButton = IconButton(
+          tooltip: context.strings.chart.settings,
+          onPressed: () =>
+              unawaited(showChartSettingsSheet(context, instrumentId)),
+          icon: const Icon(AppIcons.settings),
+        );
         if (narrow) {
           return Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
@@ -125,6 +137,9 @@ class StockChartToolbar extends ConsumerWidget {
                 Row(
                   children: [
                     studiesButton,
+                    settingsButton,
+                    DrawingToolButton(instrumentId: instrumentId),
+                    ChartExpandButton(instrumentId: instrumentId),
                     Expanded(child: summary),
                   ],
                 ),
@@ -147,13 +162,18 @@ class StockChartToolbar extends ConsumerWidget {
           );
         }
         return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 4, 0),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
               studiesButton,
+              settingsButton,
+              DrawingToolButton(instrumentId: instrumentId),
+              ChartExpandButton(instrumentId: instrumentId),
               Expanded(child: summary),
               loadStatus,
+              const SizedBox(width: 8),
               intervalPicker,
+              const SizedBox(width: 8),
               chartTypePicker,
             ],
           ),
@@ -162,3 +182,6 @@ class StockChartToolbar extends ConsumerWidget {
     );
   }
 }
+
+/// Compatibility name for existing stock-page integrations.
+typedef StockChartToolbar = ChartToolbar;

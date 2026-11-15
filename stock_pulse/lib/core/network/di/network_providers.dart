@@ -2,12 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stock_pulse/core/config/app_config.dart';
 import 'package:stock_pulse/core/market_time/di/market_time_providers.dart';
 import 'package:stock_pulse/core/network/data/api_client.dart';
+import 'package:stock_pulse/core/network/data/frame_decoder.dart';
 import 'package:stock_pulse/core/network/data/http_debug_client.dart';
 import 'package:stock_pulse/core/network/data/market_socket.dart';
 import 'package:stock_pulse/core/network/data/secure_idempotency_keys.dart';
 import 'package:stock_pulse/core/network/domain/debug_client.dart';
 import 'package:stock_pulse/core/network/domain/idempotency_keys.dart';
 import 'package:stock_pulse/core/network/domain/socket_status.dart';
+import 'package:stock_pulse/core/observability/di/observability_providers.dart';
 
 // Plain `Provider`s: created once and kept for the app's life, which is what
 // a socket and an HTTP client need. Tests override `appConfigProvider`.
@@ -29,6 +31,9 @@ final marketSocketProvider = Provider<MarketSocket>((ref) {
     ref.watch(appConfigProvider).socketUri,
     clock: ref.watch(clockProvider),
     serverClock: ref.watch(serverClockProvider),
+    drops: FrameDropCounter(
+      (event, data) => ref.read(crashReporterProvider).log(event, data),
+    ),
   )..start();
   ref.onDispose(socket.dispose);
   return socket;

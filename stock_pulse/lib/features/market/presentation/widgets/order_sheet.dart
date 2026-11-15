@@ -20,7 +20,7 @@ import 'package:stock_pulse/features/market/domain/instrument.dart';
 import 'package:stock_pulse/features/market/presentation/widgets/order_product_picker.dart';
 import 'package:stock_pulse/features/market/presentation/widgets/order_summary_card.dart';
 import 'package:stock_pulse/features/orders/application/order_draft.dart';
-import 'package:stock_pulse/features/orders/application/order_ticket_controller.dart';
+import 'package:stock_pulse/features/orders/application/ticket_block_message.dart';
 import 'package:stock_pulse/features/orders/di/order_preflight_provider.dart';
 import 'package:stock_pulse/features/orders/di/order_ticket_providers.dart';
 import 'package:stock_pulse/features/orders/domain/order.dart'
@@ -263,9 +263,7 @@ class _OrderSheetState extends ConsumerState<OrderSheet> {
           symbol: symbol,
           draft: draft,
           checkingStatus: submitState.checkingStatus,
-          blockReason: block == null
-              ? null
-              : OrderTicketController.blockMessage(s, block),
+          blockReason: block == null ? null : ticketBlockMessage(s, block),
           onConfirm: _confirm,
         ),
       ],

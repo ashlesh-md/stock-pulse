@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stock_pulse/app/di/layout_providers.dart';
@@ -56,6 +58,22 @@ void main() {
     await pumpAt(tester, 1440);
     expect(rail(tester).extended, isTrue);
     expect(rail(tester).labelType, NavigationRailLabelType.none);
+  });
+
+  testWidgets('expanded rail surface reaches the bottom gesture area', (
+    tester,
+  ) async {
+    await pumpAt(tester, 1440, height: 900);
+    final surface = find
+        .ancestor(
+          of: find.byType(NavigationRail),
+          matching: find.byType(ColoredBox),
+        )
+        .first;
+    expect(
+      tester.getRect(surface).bottom,
+      greaterThanOrEqualTo(tester.view.physicalSize.height - 1),
+    );
   });
 
   testWidgets('compact bottom bar animates away for the keyboard and returns', (
@@ -177,5 +195,27 @@ void main() {
 
     expect(h.router(tester).state.name, StockRoute.name);
     expect(h.container(tester).read(stockPaneProvider), isNull);
+  });
+
+  testWidgets('B21: on an unfolded foldable a stock from the watchlist fills '
+      'the pane beside the hinge', (tester) async {
+    tester.view.displayFeatures = const [
+      ui.DisplayFeature(
+        bounds: Rect.fromLTWH(400, 0, 0, 800),
+        type: ui.DisplayFeatureType.fold,
+        state: ui.DisplayFeatureState.postureFlat,
+      ),
+    ];
+    addTearDown(tester.view.resetDisplayFeatures);
+    await pumpAt(tester, 800);
+
+    tester
+        .element(find.byType(WatchlistScreen))
+        .pushTo<void>(const StockRoute('TCS'))
+        .ignore();
+    await tester.pumpAndSettle();
+
+    expect(h.router(tester).state.name, WatchlistRoute.name);
+    expect(h.container(tester).read(stockPaneProvider), 'TCS');
   });
 }

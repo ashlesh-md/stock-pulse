@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stock_pulse/app/di/layout_providers.dart';
 import 'package:stock_pulse/app/layout/adaptive_two_pane.dart';
 import 'package:stock_pulse/app/layout/pane_placeholder.dart';
+import 'package:stock_pulse/app/layout/window_class.dart';
 import 'package:stock_pulse/core/assets/app_icons.dart';
 import 'package:stock_pulse/core/l10n/l10n_context.dart';
 import 'package:stock_pulse/features/market/presentation/screens/stock_detail_screen.dart';
@@ -18,6 +19,7 @@ class WatchlistTwoPane extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final id = ref.watch(stockPaneProvider);
     return AdaptiveTwoPane(
+      globalOffset: Offset(context.windowClass.railRegionWidth, 0),
       primary: const WatchlistScreen(),
       secondary: id == null
           ? null
