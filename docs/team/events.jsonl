@@ -1136,3 +1136,94 @@
 {"ts": 1794730878166, "type": "signoff", "gate": "engineering", "decision": "approved", "by": "reviewer", "notes": "Code review of v2: 7 High + 1 Medium fixed and re-verified (order ticket uncertain/stuck states, chart readout scope and tick snap, holdings LTP, F&O exit units, full-screen orientation). 1,168 tests, 100% coverage, analyze/file length/deny list/architecture clean."}
 {"ts": 1794730878213, "type": "signoff", "gate": "qa", "decision": "approved", "by": "qa-lead", "notes": "Fold emulator: watchlist two-pane at hinge, fold/unfold keeps state, order placed and filled, portfolio P&L and funds correct, options NIFTY at ATM, AI chat cards live, pre-open previous session chart. Failure suites trace F1-F18; pseudo-locale 9 screens no overflow. Device perf runs S-47/48/76 deferred to a real phone."}
 {"ts": 1794730878260, "type": "message", "from": "manager", "to": null, "thread": "build", "text": "Engineering and QA signed off. Remaining: S-47, S-48, S-76 need a real phone."}
+{"ts": 1794731614893, "type": "task", "id": "S-47", "status": "blocked", "title": "", "owner": "dev-perf", "story": "", "note": "Emulator baseline tried 15 Nov: release build cold start 7.6-10.4 s, but Android Settings itself takes 8.9-11.3 s on the same emulator (host load ~15). Emulator timings are not usable; run on a real phone."}
+{"ts": 1794731614955, "type": "task", "id": "S-48", "status": "blocked", "title": "", "owner": "dev-perf", "story": "", "note": "Emulator baseline tried 15 Nov: release build cold start 7.6-10.4 s, but Android Settings itself takes 8.9-11.3 s on the same emulator (host load ~15). Emulator timings are not usable; run on a real phone."}
+{"ts": 1794731615004, "type": "task", "id": "S-76", "status": "blocked", "title": "", "owner": "dev-perf", "story": "", "note": "Emulator baseline tried 15 Nov: release build cold start 7.6-10.4 s, but Android Settings itself takes 8.9-11.3 s on the same emulator (host load ~15). Emulator timings are not usable; run on a real phone."}
+{"ts": 1794731615056, "type": "message", "from": "manager", "to": null, "thread": "build", "text": "Public repo updated to v0.2.0 (commit 30c8595, release with 3 APKs). Perf stories stay blocked: the emulator is too loaded to time anything (its own Settings app takes ~10 s to start)."}
+{"ts": 1794731839411, "type": "phase", "phase": "planning", "status": "done", "note": "All stories planned, including CR-1 and CR-2", "by": "scrum-master"}
+{"ts": 1794731839458, "type": "phase", "phase": "build", "status": "done", "note": "All buildable stories built; S-47, S-48, S-76 need a real phone", "by": "dev-lead"}
+{"ts": 1794731839505, "type": "phase", "phase": "qa", "status": "done", "note": "Fold emulator QA, failure suites F1-F18, pseudo-locale overflow; 1,168 app tests at 100% coverage", "by": "qa-lead"}
+{"ts": 1794731839556, "type": "phase", "phase": "review", "status": "done", "note": "7 High + 1 Medium found and fixed, re-reviewed; engineering signed off", "by": "reviewer"}
+{"ts": 1794731839603, "type": "phase", "phase": "gate-3", "status": "done", "note": "User asked to publish: v0.2.0 released on GitHub", "by": "manager"}
+{"ts": 1794731839681, "type": "task", "id": "S-8", "status": "done", "title": "", "owner": "dev-realtime", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731839727, "type": "task", "id": "S-9", "status": "done", "title": "", "owner": "dev-realtime", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731839778, "type": "task", "id": "S-15", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731839829, "type": "task", "id": "S-17", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731839875, "type": "task", "id": "S-18", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731839924, "type": "task", "id": "S-22", "status": "done", "title": "", "owner": "dev-ai", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840044, "type": "task", "id": "S-23", "status": "done", "title": "", "owner": "dev-realtime", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840092, "type": "task", "id": "S-24", "status": "done", "title": "", "owner": "dev-realtime", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840138, "type": "task", "id": "S-25", "status": "done", "title": "", "owner": "dev-realtime", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840185, "type": "task", "id": "S-26", "status": "done", "title": "", "owner": "dev-realtime", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840234, "type": "task", "id": "S-27", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840284, "type": "task", "id": "S-29", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840334, "type": "task", "id": "S-30", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840383, "type": "task", "id": "S-31", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840430, "type": "task", "id": "S-32", "status": "done", "title": "", "owner": "dev-ai", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840477, "type": "task", "id": "S-33", "status": "done", "title": "", "owner": "dev-ai", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840524, "type": "task", "id": "S-34", "status": "done", "title": "", "owner": "dev-ai", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840570, "type": "task", "id": "S-35", "status": "done", "title": "", "owner": "dev-perf", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840616, "type": "task", "id": "S-36", "status": "done", "title": "", "owner": "dev-perf", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840663, "type": "task", "id": "S-37", "status": "done", "title": "", "owner": "dev-realtime", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840709, "type": "task", "id": "S-38", "status": "done", "title": "", "owner": "dev-realtime", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840755, "type": "task", "id": "S-39", "status": "done", "title": "", "owner": "dev-realtime", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840850, "type": "task", "id": "S-40", "status": "done", "title": "", "owner": "dev-realtime", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840914, "type": "task", "id": "S-41", "status": "done", "title": "", "owner": "dev-perf", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731840964, "type": "task", "id": "S-42", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731841017, "type": "task", "id": "S-43", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731841071, "type": "task", "id": "S-44", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731841126, "type": "task", "id": "S-45", "status": "done", "title": "", "owner": "dev-ai", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731841181, "type": "task", "id": "S-46", "status": "done", "title": "", "owner": "dev-perf", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731841236, "type": "task", "id": "S-49", "status": "done", "title": "", "owner": "dev-realtime", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731841290, "type": "task", "id": "S-50", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731841344, "type": "task", "id": "S-51", "status": "done", "title": "", "owner": "dev-ai", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731841398, "type": "task", "id": "S-10a", "status": "done", "title": "", "owner": "dev-realtime", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731841453, "type": "task", "id": "S-10b", "status": "done", "title": "", "owner": "dev-realtime", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731841504, "type": "task", "id": "S-28a", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731841559, "type": "task", "id": "S-28b", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731841612, "type": "task", "id": "S-48a", "status": "done", "title": "", "owner": "dev-perf", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731841692, "type": "task", "id": "R-5", "status": "done", "title": "", "owner": "manager", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731841982, "type": "task", "id": "S-52", "status": "done", "title": "", "owner": "dev-ai", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731842075, "type": "task", "id": "S-53", "status": "done", "title": "", "owner": "codex", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731842149, "type": "task", "id": "S-54", "status": "done", "title": "", "owner": "dev-ai", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731842217, "type": "task", "id": "S-55", "status": "done", "title": "", "owner": "codex", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731842279, "type": "task", "id": "S-56", "status": "done", "title": "", "owner": "codex", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731842358, "type": "task", "id": "S-57", "status": "done", "title": "", "owner": "codex", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731842447, "type": "task", "id": "S-58", "status": "done", "title": "", "owner": "codex", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731842508, "type": "task", "id": "S-59", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731842563, "type": "task", "id": "S-60", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731842635, "type": "task", "id": "S-61", "status": "done", "title": "", "owner": "dev-perf", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731842696, "type": "task", "id": "S-62", "status": "done", "title": "", "owner": "dev-perf", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731842744, "type": "task", "id": "S-63", "status": "done", "title": "", "owner": "dev-realtime", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731842793, "type": "task", "id": "S-64", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731842846, "type": "task", "id": "S-65", "status": "done", "title": "", "owner": "dev-perf", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731842919, "type": "task", "id": "S-66", "status": "done", "title": "", "owner": "dev-ai", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731842969, "type": "task", "id": "S-67", "status": "done", "title": "", "owner": "dev-perf", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843017, "type": "task", "id": "S-68", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843066, "type": "task", "id": "S-69", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843114, "type": "task", "id": "S-70", "status": "done", "title": "", "owner": "dev-ai", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843161, "type": "task", "id": "S-71", "status": "done", "title": "", "owner": "codex", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843208, "type": "task", "id": "S-72", "status": "done", "title": "", "owner": "manager", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843254, "type": "task", "id": "S-73", "status": "done", "title": "", "owner": "manager", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843300, "type": "task", "id": "S-74", "status": "done", "title": "", "owner": "dev-perf", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843346, "type": "task", "id": "S-75", "status": "done", "title": "", "owner": "dev-perf", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843393, "type": "task", "id": "B9", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843439, "type": "task", "id": "B10", "status": "done", "title": "", "owner": "dev-realtime", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843486, "type": "task", "id": "B11", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843532, "type": "task", "id": "B12", "status": "done", "title": "", "owner": "dev-ai", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843579, "type": "task", "id": "B13", "status": "done", "title": "", "owner": "dev-ai", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843625, "type": "task", "id": "B14", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843671, "type": "task", "id": "B15", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843717, "type": "task", "id": "B16", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843764, "type": "task", "id": "B17", "status": "done", "title": "", "owner": "dev-perf", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843810, "type": "task", "id": "B18", "status": "done", "title": "", "owner": "dev-perf", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843856, "type": "task", "id": "B19", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843903, "type": "task", "id": "B20", "status": "done", "title": "", "owner": "dev-trading", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731843983, "type": "task", "id": "B21", "status": "done", "title": "", "owner": "manager", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731844036, "type": "task", "id": "B25", "status": "done", "title": "", "owner": "codex", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731844087, "type": "task", "id": "B26", "status": "done", "title": "", "owner": "codex", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731844136, "type": "task", "id": "B27", "status": "done", "title": "", "owner": "codex", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731844185, "type": "task", "id": "B28", "status": "done", "title": "", "owner": "codex", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731844232, "type": "task", "id": "B29", "status": "done", "title": "", "owner": "manager", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731844279, "type": "task", "id": "B30", "status": "done", "title": "", "owner": "manager", "story": "", "note": "Signed off: engineering and QA approved"}
+{"ts": 1794731844331, "type": "agent", "agent": "manager", "status": "done", "activity": "v0.2.0 released; 3 device-only perf stories wait for a real phone"}

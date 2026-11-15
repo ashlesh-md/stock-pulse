@@ -153,8 +153,8 @@ Every agent logged its status, messages, tasks and sign-offs to an append-only e
 
 | Measure | Count |
 |---|---|
-| Events logged | 1,138 |
-| Agent-to-agent messages | 287, in 8 threads (most in architecture and build) |
+| Events logged | 1,229 |
+| Agent-to-agent messages | 288, in 8 threads (most in architecture and build) |
 | Documents produced | 63 (PRD, UX spec, design system, TRD, HLD, 4 LLDs, 21 ADRs, stories, reviews) |
 | Roles | 18 |
 | Sign-offs | Product, design, engineering, QA and the human: all approved |
